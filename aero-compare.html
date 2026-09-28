@@ -182,6 +182,7 @@ tr:hover td{background:rgba(0,212,255,0.025)}
   <div class="tab" onclick="switchTab('finesse')">🏆 Finesse &amp; Taux de chute</div>
   <div class="tab" onclick="switchTab('physique')">⚗️ Physique du vol</div>
   <div class="tab" onclick="switchTab('table')">📋 Tableau complet</div>
+  <div class="tab" onclick="switchTab('refs')">📚 Références</div>
 </div>
 
 <main>
@@ -275,6 +276,33 @@ tr:hover td{background:rgba(0,212,255,0.025)}
   <div class="stitle">Tableau comparatif complet <span class="note">— cliquer les en-têtes pour trier</span></div>
   <div class="card">
     <div class="tbl-wrap"><table id="mainTable"></table></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 6: REFERENCES ═══════════════ -->
+<div id="tab-refs" class="tab-content fi">
+  <div class="stitle">Sources &amp; Bibliographie <span class="note">— Littérature aéronautique et ornithologique</span></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🦅 Modèles Biologiques (Animaux)</h3>
+      <ul style="color:var(--muted); font-size:0.85rem; padding-left:1.2rem; line-height:1.6;">
+        <li><strong>Pennycuick, C.J. (2008).</strong> <em>Modelling the Flying Bird.</em> Théorie standard de la mécanique du vol animal et approximations paraboliques des polaires.</li>
+        <li><strong>Tenkeskes, H. (1992).</strong> <em>The Simple Science of Flight.</em> De l'insecte au Jumbo Jet (comparaisons de finesse, masse, Vmin et Reynolds).</li>
+        <li><strong>Rayner, J.M.V. (1988).</strong> <em>Form and function in avian flight.</em> (Biomécanique des martinets, faucons et frégates).</li>
+        <li><strong>Norberg, U.M. (1990).</strong> <em>Vertebrate Flight.</em> Données de charge alaire et aérodynamique des chauves-souris et planeurs mammifères (écureuils).</li>
+        <li><strong>Nachtigall, W. (2003).</strong> <em>Insect Flight.</em> Profils à bas Reynolds pour le monarque et la libellule.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>⚙️ Modèles d'Ingénierie (Machines)</h3>
+      <ul style="color:var(--muted); font-size:0.85rem; padding-left:1.2rem; line-height:1.6;">
+        <li><strong>Jane's All the World's Aircraft (Diverses années).</strong> Données de performance (Vcruise, Vmax) pour F-22, Concorde, A320neo, B787.</li>
+        <li><strong>UIUC Airfoil Data Site (Selig et al.).</strong> Mesures en soufflerie à bas nombres de Reynolds pour planeurs RC (F1D, F3K, Walkalong).</li>
+        <li><strong>Johnson, W. (2013).</strong> <em>Rotorcraft Aeromechanics.</em> Théorie de la finesse et pénalités du vol stationnaire pour hélicoptères (H145, Joby S4).</li>
+        <li><strong>NASA Hyper-X Program.</strong> Rapports publics sur les vols du X-43A Scramjet (Mach 9.8).</li>
+        <li><strong>Schleicher &amp; DG-Flugzeugbau.</strong> Manuels de vol certifiés pour les polaires mesurées des ASW-22 et LS8.</li>
+      </ul>
+    </div>
   </div>
 </div>
 
