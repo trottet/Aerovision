@@ -181,6 +181,7 @@ tr:hover td{background:rgba(0,212,255,0.025)}
   <div class="tab" onclick="switchTab('polaire')">📉 Polaires de vol</div>
   <div class="tab" onclick="switchTab('finesse')">🏆 Finesse &amp; Taux de chute</div>
   <div class="tab" onclick="switchTab('physique')">⚗️ Physique du vol</div>
+  <div class="tab" onclick="switchTab('parametric')">🌌 Espace Paramétrique</div>
   <div class="tab" onclick="switchTab('table')">📋 Tableau complet</div>
   <div class="tab" onclick="switchTab('refs')">📚 Références</div>
 </div>
@@ -271,6 +272,34 @@ tr:hover td{background:rgba(0,212,255,0.025)}
   </div>
 </div>
 
+<!-- ═══════════════ TAB 7: PARAMETRIC ═══════════════ -->
+<div id="tab-parametric" class="tab-content fi">
+  <div class="stitle">Espace Paramétrique Global <span class="note">— Masse, Vitesse, Finesse et Taux de chute</span></div>
+  
+  <div class="insight" style="margin-bottom:1.5rem">
+    Visualisation de l'<strong>espace paramétrique complet</strong> (25 entités). 
+    <br>• <strong>Graphique 1 (Bulles) :</strong> Axe X = Vitesse de croisière, Axe Y = Finesse, Taille de bulle = Masse (échelle log), Couleur = Type.
+    <br>• <strong>Graphique 2 :</strong> Masse vs Plage de vitesse (Vmax - Vmin).
+    <br>• <strong>Graphique 3 :</strong> Vitesse de croisière vs Taux de chute.
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3>Vitesse vs Finesse (Taille des bulles = Masse proportionnelle)</h3>
+    <div class="chart-wrap" style="height:450px"><canvas id="bubbleChart"></canvas></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Masse (kg) vs Plage de Vitesse exploitable (km/h)</h3>
+      <div class="chart-wrap" style="height:350px"><canvas id="massSpeedRangeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Vitesse Croisière vs Taux de chute (m/s)</h3>
+      <div class="chart-wrap" style="height:350px"><canvas id="speedSinkChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ TAB 5: TABLE ═══════════════ -->
 <div id="tab-table" class="tab-content fi">
   <div class="stitle">Tableau comparatif complet <span class="note">— cliquer les en-têtes pour trier</span></div>
@@ -324,73 +353,73 @@ const E = [
   // ──── ANIMAUX ────
   { id:'albatross', type:'animal', emoji:'🦤', name:'Albatros hurleur',      sub:'Diomedea exulans',
     propulsion:'Planage dynamique',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:35,vMs:41,wMin:0.58,vMd:54,LD:22,vCruise:55,vMax:145,WL:14,AR:15,altMax:3000,
+    mass:8.5,vMin:35,vMs:41,wMin:0.58,vMd:54,LD:22,vCruise:55,vMax:145,WL:14,AR:15,altMax:3000,
     Re:'5×10⁵',ReN:500000, color:'#FF8F00',
     note:"Maître du vol dynamique. Envergure jusqu'à 3.5m. Vole des semaines sans se poser."
   },
   { id:'condor',    type:'animal', emoji:'🦅', name:'Condor des Andes',       sub:'Vultur gryphus',
     propulsion:'Thermique/ascendances',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:48,vMs:42,wMin:0.65,vMd:55,LD:23,vCruise:55,vMax:130,WL:11,AR:7.5,altMax:5500,
+    mass:11,vMin:48,vMs:42,wMin:0.65,vMd:55,LD:23,vCruise:55,vMax:130,WL:11,AR:7.5,altMax:5500,
     Re:'8×10⁵',ReN:800000, color:'#F4511E',
     note:"Meilleure finesse du monde animal. Plane des heures sans battre des ailes sur les Andes."
   },
   { id:'swift',     type:'animal', emoji:'🐦', name:'Martinet noir',           sub:'Apus apus',
     propulsion:'Battement/vol propulsé',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:40,vMs:46,wMin:1.6,vMd:60,LD:10,vCruise:90,vMax:170,WL:6,AR:10,altMax:3000,
+    mass:0.04,vMin:40,vMs:46,wMin:1.6,vMd:60,LD:10,vCruise:90,vMax:170,WL:6,AR:10,altMax:3000,
     Re:'1.5×10⁵',ReN:150000, color:'#8D6E63',
     note:"Vit quasiment entièrement en vol. Dort et s'accouple en vol. Vitesse de croisière record pour un oiseau."
   },
   { id:'falcon',    type:'animal', emoji:'🦅', name:'Faucon pèlerin',          sub:'Falco peregrinus',
     propulsion:'Vol battu + piqué',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:38,vMs:49,wMin:1.4,vMd:65,LD:10,vCruise:65,vMax:389,WL:18,AR:5,altMax:3000,
+    mass:1.0,vMin:38,vMs:49,wMin:1.4,vMd:65,LD:10,vCruise:65,vMax:389,WL:18,AR:5,altMax:3000,
     Re:'3×10⁵',ReN:300000, color:'#FF5722',
     note:"389 km/h en piqué — animal le plus rapide sur Terre. Ailes falciformes repliées en piqué."
   },
   { id:'eagle',     type:'animal', emoji:'🦅', name:'Aigle royal',             sub:'Aquila chrysaetos',
     propulsion:'Planage/vol battu',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:35,vMs:38,wMin:0.85,vMd:50,LD:15,vCruise:50,vMax:240,WL:10,AR:7,altMax:3600,
+    mass:4.5,vMin:35,vMs:38,wMin:0.85,vMd:50,LD:15,vCruise:50,vMax:240,WL:10,AR:7,altMax:3600,
     Re:'6×10⁵',ReN:600000, color:'#BF360C',
     note:"Ailes à empennames digitées pour contrôle fin en thermique. Manœuvrabilité exceptionnelle."
   },
   { id:'goose',     type:'animal', emoji:'🪶', name:'Bernache tête barrée',    sub:'Anser indicus',
     propulsion:'Vol battu actif',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:55,vMs:61,wMin:2.3,vMd:80,LD:8,vCruise:80,vMax:120,WL:20,AR:9,altMax:9000,
+    mass:2.5,vMin:55,vMs:61,wMin:2.3,vMd:80,LD:8,vCruise:80,vMax:120,WL:20,AR:9,altMax:9000,
     Re:'8×10⁵',ReN:800000, color:'#607D8B',
     note:"Vole à 9000m d'altitude au-dessus de l'Himalaya. Migration Sibérie→Inde sans escale."
   },
   { id:'frigate',   type:'animal', emoji:'🦤', name:'Frégate superbe',         sub:'Fregata magnificens',
     propulsion:'Planage + courants',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:28,vMs:29,wMin:0.44,vMd:38,LD:22,vCruise:45,vMax:150,WL:8,AR:12,altMax:2500,
+    mass:1.5,vMin:28,vMs:29,wMin:0.44,vMd:38,LD:22,vCruise:45,vMax:150,WL:8,AR:12,altMax:2500,
     Re:'3×10⁵',ReN:300000, color:'#3E2723',
     note:"Charge alaire la plus basse (8 kg/m²) et taux de chute parmi les plus faibles du monde animal. Ne peut pas nager — reste en vol permanent."
   },
   { id:'crane',     type:'animal', emoji:'🪶', name:'Grue cendrée',            sub:'Grus grus',
     propulsion:'Vol battu en V',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:55,vMs:53,wMin:1.2,vMd:70,LD:14,vCruise:70,vMax:100,WL:15,AR:9,altMax:2000,
+    mass:5.0,vMin:55,vMs:53,wMin:1.2,vMd:70,LD:14,vCruise:70,vMax:100,WL:15,AR:9,altMax:2000,
     Re:'7×10⁵',ReN:700000, color:'#78909C',
     note:"Migration en formation en V : économie d'énergie de 20-30% grâce à l'effet de sillage."
   },
   { id:'hummingbird',type:'animal',emoji:'🐦',name:'Colibri à gorge rubis',   sub:'Archilochus colubris',
     propulsion:'Vol stationnaire (50Hz)',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
-    vMin:0,vMs:null,wMin:0.05,vMd:25,LD:2,vCruise:40,vMax:80,WL:4,AR:4,altMax:2000,
+    mass:0.003,vMin:0,vMs:null,wMin:0.05,vMd:25,LD:2,vCruise:40,vMax:80,WL:4,AR:4,altMax:2000,
     Re:'2×10⁴',ReN:20000, color:'#4CAF50',
     note:"Vol stationnaire pur. 50 battements/seconde. Seul oiseau capable de vol en marche arrière. Consomme 6x son poids en nectar/jour."
   },
   { id:'butterfly',  type:'animal',emoji:'🦋',name:'Papillon monarque',        sub:'Danaus plexippus',
     propulsion:'Battement + planage',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:8,vMs:15,wMin:1.0,vMd:20,LD:4,vCruise:20,vMax:35,WL:0.3,AR:3,altMax:3000,
+    mass:0.0005,vMin:8,vMs:15,wMin:1.0,vMd:20,LD:4,vCruise:20,vMax:35,WL:0.3,AR:3,altMax:3000,
     Re:'3×10³',ReN:3000, color:'#FF8F00',
     note:"Migration de 4500 km (Canada→Mexique) avec finesse=4 et corps de 0.5g. Exploit de navigation magnétique."
   },
   { id:'dragonfly',  type:'animal',emoji:'🪲',name:'Libellule',                sub:'Anax imperator',
     propulsion:'4 ailes indépendantes',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
-    vMin:5,vMs:21,wMin:1.2,vMd:28,LD:5,vCruise:30,vMax:55,WL:0.5,AR:6,altMax:500,
+    mass:0.001,vMin:5,vMs:21,wMin:1.2,vMd:28,LD:5,vCruise:30,vMax:55,WL:0.5,AR:6,altMax:500,
     Re:'5×10³',ReN:5000, color:'#26C6DA',
     note:"4 ailes actionnées indépendamment — manœuvrabilité hors norme. Taux de capture de proies en vol : 95%."
   },
   { id:'bat',        type:'animal',emoji:'🦇',name:'Grande Noctule',           sub:'Nyctalus lasiopterus',
     propulsion:'Aile membraneuse battante',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:12,vMs:27,wMin:1.0,vMd:35,LD:7,vCruise:40,vMax:90,WL:3,AR:6,altMax:1500,
+    mass:0.05,vMin:12,vMs:27,wMin:1.0,vMd:35,LD:7,vCruise:40,vMax:90,WL:3,AR:6,altMax:1500,
     Re:'8×10⁴',ReN:80000, color:'#7B1FA2',
     note:"Navigation par écholocation (200 kHz). Aile morphante à 25 degrés de liberté. Vole jusqu'à 3000m d'altitude la nuit."
   },
@@ -398,85 +427,85 @@ const E = [
   // ──── MACHINES ────
   { id:'asw22',   type:'machine',emoji:'⬜',name:'Planeur ASW-22',            sub:'Schleicher ASW-22',
     propulsion:'Aucune (planeur pur)',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:70,vMs:95,wMin:0.38,vMd:121,LD:60,vCruise:120,vMax:280,WL:44,AR:30,altMax:8000,
+    mass:600,vMin:70,vMs:95,wMin:0.38,vMd:121,LD:60,vCruise:120,vMax:280,WL:44,AR:30,altMax:8000,
     Re:'8×10⁶',ReN:8000000, color:'#00BCD4',
     note:"Finesse 60:1 — record mondial pour planeurs. Profil laminaire. Eau de ballast variable."
   },
   { id:'ls8',     type:'machine',emoji:'⬜',name:'Planeur LS8',               sub:'DG-Flugzeugbau LS8',
     propulsion:'Aucune (planeur pur)',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:65,vMs:86,wMin:0.52,vMd:110,LD:46,vCruise:110,vMax:250,WL:35,AR:23,altMax:7000,
+    mass:400,vMin:65,vMs:86,wMin:0.52,vMd:110,LD:46,vCruise:110,vMax:250,WL:35,AR:23,altMax:7000,
     Re:'6×10⁶',ReN:6000000, color:'#26C6DA',
     note:"Planeur 15m de référence en compétition mondiale. Profil laminaire NLF. Traîne minime."
   },
   { id:'hangglider',type:'machine',emoji:'🪁',name:'Deltaplane (compétition)',sub:'Aeros Combat C',
     propulsion:'Aucune / poids pilote',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:30,vMs:42,wMin:0.9,vMd:55,LD:14,vCruise:55,vMax:135,WL:6,AR:8,altMax:5000,
+    mass:120,vMin:30,vMs:42,wMin:0.9,vMd:55,LD:14,vCruise:55,vMax:135,WL:6,AR:8,altMax:5000,
     Re:'1×10⁶',ReN:1000000, color:'#0097A7',
     note:"Structure composite rigide. Rivalise avec les grands rapaces en finesse. Décollage à pied."
   },
   { id:'paraglider',type:'machine',emoji:'🪂',name:'Parapente (EN-D)',        sub:'Ozone Enzo 3',
     propulsion:'Aucune / voile souple',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
-    vMin:25,vMs:32,wMin:1.0,vMd:42,LD:12,vCruise:40,vMax:70,WL:5,AR:6.5,altMax:7000,
+    mass:100,vMin:25,vMs:32,wMin:1.0,vMd:42,LD:12,vCruise:40,vMax:70,WL:5,AR:6.5,altMax:7000,
     Re:'5×10⁵',ReN:500000, color:'#4DD0E1',
     note:"Aile gonflable sans structure rigide. Finesse ≈ albatros. Record de distance : 634 km en une journée."
   },
   { id:'ultralight',type:'machine',emoji:'🛩️',name:'ULM Pipistrel Sinus',   sub:'Pipistrel Sinus 912',
     propulsion:'Rotax 80ch (ULM)',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:65,vMs:76,wMin:0.85,vMd:100,LD:28,vCruise:145,vMax:200,WL:22,AR:15,altMax:4000,
+    mass:450,vMin:65,vMs:76,wMin:0.85,vMd:100,LD:28,vCruise:145,vMax:200,WL:22,AR:15,altMax:4000,
     Re:'3×10⁶',ReN:3000000, color:'#80DEEA',
     note:"Avion à motorisation légère. Finesse 28 moteur coupé — parmi les meilleurs de l'aviation légère."
   },
   { id:'solar',    type:'machine',emoji:'☀️',name:'Solar Impulse 2',          sub:'HB-SIB',
     propulsion:'Solaire électrique',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:55,vMs:57,wMin:0.5,vMd:75,LD:40,vCruise:70,vMax:140,WL:9,AR:21,altMax:8500,
+    mass:2300,vMin:55,vMs:57,wMin:0.5,vMd:75,LD:40,vCruise:70,vMax:140,WL:9,AR:21,altMax:8500,
     Re:'2×10⁶',ReN:2000000, color:'#FFF176',
     note:"Tour du monde sans carburant. Finesse remarquable pour un avion solaire. Envergure 72m (Boeing 747 : 68m) pour 2.3 tonnes."
   },
   { id:'evtol',    type:'machine',emoji:'🚕',name:'eVTOL Joby S4',            sub:'Joby Aviation S4',
     propulsion:'Électrique distribué',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
-    vMin:0,vMs:120,wMin:2.0,vMd:160,LD:15,vCruise:240,vMax:322,WL:120,AR:8,altMax:1500,
+    mass:2177,vMin:0,vMs:120,wMin:2.0,vMd:160,LD:15,vCruise:240,vMax:322,WL:120,AR:8,altMax:1500,
     Re:'4×10⁶',ReN:4000000, color:'#B2EBF2',
     note:"6 rotors inclinables. VTOL électrique. Taux de charge actuelle = 15% MTOW — principal défi."
   },
   { id:'a320',     type:'machine',emoji:'✈️',name:'Airbus A320neo',           sub:'CFM LEAP-1A',
     propulsion:'Turbofan double flux',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:220,vMs:320,wMin:6.0,vMd:420,LD:17,vCruise:833,vMax:876,WL:750,AR:9.5,altMax:12000,
+    mass:73500,vMin:220,vMs:320,wMin:6.0,vMd:420,LD:17,vCruise:833,vMax:876,WL:750,AR:9.5,altMax:12000,
     Re:'4×10⁷',ReN:40000000, color:'#0288D1',
     note:"Référence moyen-courrier. Finesse moteur coupé = 17:1. Consomme 2.5L/100km/passager."
   },
   { id:'b787',     type:'machine',emoji:'✈️',name:'Boeing 787-9 Dreamliner',  sub:'GEnx / Rolls-Royce Trent',
     propulsion:'Turbofan haute dilution',hover:false,vtol:false,soaring:false,speedReg:'transonic',
-    vMin:240,vMs:350,wMin:5.0,vMd:450,LD:21,vCruise:903,vMax:954,WL:800,AR:10,altMax:13100,
+    mass:254000,vMin:240,vMs:350,wMin:5.0,vMd:450,LD:21,vCruise:903,vMax:954,WL:800,AR:10,altMax:13100,
     Re:'6×10⁷',ReN:60000000, color:'#039BE5',
     note:"Fuselage CFRP, aile composite. L/D=21 est proche du record pour un long-courrier commercial. Économies carburant 20% vs 767."
   },
   { id:'helicopter',type:'machine',emoji:'🚁',name:'Airbus H145',             sub:'Safran Arriel 2E',
     propulsion:'Turbine rotor principal',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
-    vMin:0,vMs:100,wMin:5.5,vMd:130,LD:4,vCruise:230,vMax:260,WL:40,AR:0,altMax:7300,
+    mass:3800,vMin:0,vMs:100,wMin:5.5,vMd:130,LD:4,vCruise:230,vMax:260,WL:40,AR:0,altMax:7300,
     Re:'2×10⁶',ReN:2000000, color:'#1565C0',
     note:"Voilure tournante — hover pur mais pénalité énorme en efficacité. Finesse en autorotation ≈ 4:1."
   },
   { id:'f22',      type:'machine',emoji:'🛩️',name:'F-22 Raptor',             sub:'Lockheed Martin / P&W F119',
     propulsion:'Postcombustion variable',hover:false,vtol:false,soaring:false,speedReg:'supersonic',
-    vMin:185,vMs:380,wMin:22,vMd:500,LD:6,vCruise:1900,vMax:2410,WL:450,AR:2.4,altMax:19800,
+    mass:38000,vMin:185,vMs:380,wMin:22,vMd:500,LD:6,vCruise:1900,vMax:2410,WL:450,AR:2.4,altMax:19800,
     Re:'3×10⁸',ReN:300000000, color:'#1A237E',
     note:"Supercruise Mach 1.82 sans postcombustion. Agilité supersonique record. L/D faible = performances ≠ efficacité."
   },
   { id:'concorde', type:'machine',emoji:'⚡',name:'Concorde',                 sub:'Aérospatiale / Bristol',
     propulsion:'Turboréacteur Olympus 593',hover:false,vtol:false,soaring:false,speedReg:'supersonic',
-    vMin:295,vMs:600,wMin:25,vMd:800,LD:7,vCruise:2179,vMax:2435,WL:900,AR:1.8,altMax:18300,
+    mass:185000,vMin:295,vMs:600,wMin:25,vMd:800,LD:7,vCruise:2179,vMax:2435,WL:900,AR:1.8,altMax:18300,
     Re:'5×10⁸',ReN:500000000, color:'#283593',
     note:"L/D=7 supersonique vs 4.5 pour navette spatiale. Aile delta ogival. Paris-New York en 3h30."
   },
   { id:'x43',      type:'machine',emoji:'🚀',name:'NASA X-43A Scramjet',      sub:'Hyper-X Program',
     propulsion:'Scramjet H₂',hover:false,vtol:false,soaring:false,speedReg:'hypersonic',
-    vMin:7000,vMs:8000,wMin:80,vMd:9000,LD:3.5,vCruise:11000,vMax:11265,WL:650,AR:2.5,altMax:33500,
+    mass:1300,vMin:7000,vMs:8000,wMin:80,vMd:9000,LD:3.5,vCruise:11000,vMax:11265,WL:650,AR:2.5,altMax:33500,
     Re:'10⁹',ReN:1000000000, color:'#AD1457',
     note:"Record mondial : Mach 9.8 (11 265 km/h) en 2004. Vol de 10 secondes. Température stagnation > 2000°C. Finesse mesurée ≈ 3.5."
   },
   { id:'wingsuit', type:'machine',emoji:'🧑',name:'Wingsuit humain',           sub:'Squirrel / Tony Suit',
     propulsion:'Corps humain / gravité',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
-    vMin:110,vMs:137,wMin:28,vMd:180,LD:3.5,vCruise:190,vMax:250,WL:80,AR:1.5,altMax:5000,
+    mass:90,vMin:110,vMs:137,wMin:28,vMd:180,LD:3.5,vCruise:190,vMax:250,WL:80,AR:1.5,altMax:5000,
     Re:'5×10⁶',ReN:5000000, color:'#6A1B9A',
     note:"L/D=3.5 pour le corps humain équipé. Taux de chute minimum = 28 m/s — n'est pas un planeur! Vitesse horizontale record : 314 km/h."
   },
@@ -783,6 +812,7 @@ function buildPhysique(){
 
   let mHtml='<div style="overflow-x:auto"><table style="border-collapse:separate;border-spacing:4px;min-width:800px">';
   mHtml+=`<tr><th style="background:transparent;color:var(--muted);font-size:0.7rem;padding:0.5rem">Entité</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Masse (kg)</th>
     <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Hover</th>
     <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">VTOL</th>
     <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Planage</th>
