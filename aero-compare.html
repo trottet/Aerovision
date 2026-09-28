@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AeroVision Pro — Biologie vs Ingénierie Aéronautique</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#070c14;--surface:#0c1724;--surface2:#101f30;--border:#1a2e45;
+  --accent:#00d4ff;--accent2:#0088cc;--animal:#ff8f00;--machine:#00bcd4;
+  --green:#00e676;--yellow:#ffd600;--red:#ff1744;--purple:#ce93d8;
+  --text:#e8f4fd;--muted:#6a8daa;--card:#0c1824;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HEADER */
+header{
+  background:linear-gradient(135deg,#07101f 0%,#0a1f3a 60%,#07101f 100%);
+  border-bottom:1px solid var(--border);padding:0 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;height:58px;
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-main{font-size:1.2rem;font-weight:800;letter-spacing:2px;color:var(--accent)}
+.logo-sub{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.legend-pills{display:flex;gap:0.75rem;align-items:center}
+.lpill{display:flex;align-items:center;gap:5px;font-size:0.75rem}
+.ldot{width:10px;height:10px;border-radius:50%}
+
+/* HERO */
+.hero{
+  background:radial-gradient(ellipse at 30% 0%,#001a40 0%,#07101f 60%),
+             radial-gradient(ellipse at 80% 100%,#1a0030 0%,transparent 50%);
+  padding:2.5rem 2rem 2rem;border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;
+}
+.hero h1{font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;
+  background:linear-gradient(120deg,var(--accent),#fff,var(--animal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:0.4rem}
+.hero p{color:var(--muted);font-size:0.85rem;max-width:560px;line-height:1.6}
+.hero-stats{display:flex;gap:1rem;flex-wrap:wrap}
+.hstat{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);
+  border-radius:10px;padding:0.6rem 1.2rem;text-align:center;min-width:110px}
+.hstat .v{font-size:1.5rem;font-weight:700;color:var(--accent)}
+.hstat .l{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+/* TABS */
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);
+  background:var(--surface);padding:0 1.5rem;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:0.85rem 1.25rem;cursor:pointer;color:var(--muted);font-size:0.83rem;
+  font-weight:500;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* MAIN */
+main{max-width:1500px;margin:0 auto;padding:1.75rem 1.5rem}
+
+/* SECTION TITLE */
+.stitle{font-size:0.8rem;font-weight:700;color:var(--accent);text-transform:uppercase;
+  letter-spacing:2px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+.stitle .note{font-size:0.68rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem}
+.card h3{font-size:0.75rem;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:1rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* SPEED REGIME BARS */
+.speed-chart-wrap{overflow-x:auto}
+.speed-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:6px;min-width:600px}
+.speed-label{width:180px;flex-shrink:0;font-size:0.73rem;color:var(--muted);text-align:right}
+.speed-label span{color:var(--text);font-weight:600}
+.speed-track{flex:1;height:20px;position:relative;background:rgba(255,255,255,0.03);
+  border-radius:4px;overflow:visible}
+.speed-bar{position:absolute;height:14px;top:3px;border-radius:3px;opacity:0.85}
+.speed-dot{position:absolute;width:6px;height:14px;top:3px;border-radius:2px;
+  margin-left:-3px;z-index:2}
+.speed-scale{display:flex;justify-content:space-between;font-size:0.65rem;
+  color:var(--muted);margin-top:4px;min-width:600px;padding-left:188px}
+.speed-group-label{font-size:0.7rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin:1rem 0 0.5rem;
+  padding:0.3rem 0.5rem;background:var(--surface2);border-radius:4px;
+  display:inline-block}
+
+/* POLAR CHART */
+.polar-controls{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem}
+.polar-toggle{padding:4px 10px;border-radius:20px;border:1px solid;
+  cursor:pointer;font-size:0.72rem;font-weight:600;transition:all 0.15s;
+  background:transparent}
+.polar-toggle.on{opacity:1}
+.polar-toggle.off{opacity:0.3}
+.chart-wrap{position:relative}
+
+/* BAR CHART HORIZONTAL */
+.hbar-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:5px}
+.hbar-label{width:200px;flex-shrink:0;font-size:0.73rem;text-align:right}
+.hbar-emoji{width:20px;flex-shrink:0;font-size:0.9rem;text-align:center}
+.hbar-bg{flex:1;height:18px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+.hbar-val{width:55px;flex-shrink:0;font-size:0.73rem;font-weight:700}
+
+/* SCATTER */
+.scatter-wrap{height:400px;position:relative}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:0.78rem}
+th{background:var(--surface2);padding:0.65rem 0.9rem;text-align:left;
+  color:var(--muted);font-size:0.66rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;border-bottom:1px solid var(--border);white-space:nowrap;
+  cursor:pointer;user-select:none}
+th:hover{color:var(--text)}
+td{padding:0.6rem 0.9rem;border-bottom:1px solid rgba(26,46,69,0.5);vertical-align:middle}
+tr:hover td{background:rgba(0,212,255,0.025)}
+.pill{display:inline-block;padding:2px 7px;border-radius:10px;font-weight:700;font-size:0.72rem}
+.badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.65rem;font-weight:600}
+
+/* REGIME MATRIX */
+.matrix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.6rem}
+.matrix-cell{background:var(--surface2);border-radius:8px;padding:0.6rem 0.8rem;
+  border:1px solid var(--border)}
+.matrix-cell .mct{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.3rem}
+.matrix-cell .mcv{font-size:0.85rem;font-weight:700;color:var(--text)}
+.regime-tag{display:inline-block;font-size:0.65rem;padding:1px 6px;border-radius:3px;margin:1px;font-weight:600}
+
+/* INSIGHT BOX */
+.insight{background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.15);
+  border-radius:10px;padding:0.85rem 1rem;font-size:0.8rem;line-height:1.6;
+  color:var(--muted)}
+.insight strong{color:var(--accent)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi 0.3s ease}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span style="font-size:1.5rem">✈</span>
+    <div>
+      <div class="logo-main">AEROVISION PRO</div>
+      <div class="logo-sub">Biologie &amp; Ingénierie — Performances de vol comparées</div>
+    </div>
+  </div>
+  <div class="legend-pills">
+    <div class="lpill"><div class="ldot" style="background:var(--animal)"></div><span style="font-size:0.75rem;color:var(--muted)">Animal</span></div>
+    <div class="lpill"><div class="ldot" style="background:var(--machine)"></div><span style="font-size:0.75rem;color:var(--muted)">Machine</span></div>
+  </div>
+</header>
+
+<div class="hero">
+  <div>
+    <h1>Biologie vs Ingénierie Aéronautique</h1>
+    <p>25 engins volants — du papillon au scramjet hypersonique — comparés sur leurs régimes de vitesse, finesse aérodynamique, polaire de vol, charge alaire et régime de Reynolds.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="v">23:1</div><div class="l">Meilleure finesse naturelle<br><span style="color:var(--animal)">Condor des Andes</span></div></div>
+    <div class="hstat"><div class="v">60:1</div><div class="l">Meilleure finesse machine<br><span style="color:var(--machine)">Planeur ASW-22</span></div></div>
+    <div class="hstat"><div class="v">389 km/h</div><div class="l">Record animal<br><span style="color:var(--animal)">Faucon pèlerin</span></div></div>
+    <div class="hstat"><div class="v">11 265 km/h</div><div class="l">Record machine<br><span style="color:var(--machine)">X-43A (NASA)</span></div></div>
+    <div class="hstat"><div class="v">0.38 m/s</div><div class="l">Taux de chute min<br><span style="color:var(--machine)">ASW-22</span></div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('regimes')">📐 Régimes de vitesse</div>
+  <div class="tab" onclick="switchTab('polaire')">📉 Polaires de vol</div>
+  <div class="tab" onclick="switchTab('finesse')">🏆 Finesse &amp; Taux de chute</div>
+  <div class="tab" onclick="switchTab('physique')">⚗️ Physique du vol</div>
+  <div class="tab" onclick="switchTab('table')">📋 Tableau complet</div>
+</div>
+
+<main>
+
+<!-- ═══════════════ TAB 1: RÉGIMES ═══════════════ -->
+<div id="tab-regimes" class="tab-content active fi">
+  <div class="stitle">Régimes de vitesse <span class="note">— échelle logarithmique · bleu=Vcruise · blanc=Vmd (meilleure finesse)</span></div>
+  <div class="grid2" style="margin-bottom:1.5rem">
+    <div class="insight">
+      L'échelle va de <strong>5 km/h</strong> (libellule) à <strong>11 265 km/h</strong> (X-43A). Une échelle logarithmique est indispensable — sinon tous les animaux deviendraient invisibles.<br>
+      <span style="color:var(--animal)">●</span> = Vcruise &nbsp; <span style="color:#fff">●</span> = Vmd (vitesse de meilleure finesse)
+    </div>
+    <div class="insight">
+      Le <strong>faucon pèlerin en piqué</strong> (389 km/h) dépasse la Vmax de nombreux avions légers. L'<strong>albatros</strong> planant à 54 km/h optimaux rivalise en finesse avec un Cessna 172 (≈8:1 vs 22:1 — l'oiseau gagne!)
+    </div>
+  </div>
+  <div class="card">
+    <div class="speed-chart-wrap" id="speedChartWrap"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 2: POLAIRE ═══════════════ -->
+<div id="tab-polaire" class="tab-content fi">
+  <div class="stitle">Polaire de vol <span class="note">— taux de chute (m/s) vs vitesse (km/h) · approximation parabolique · points mesurés marqués ★</span></div>
+  <div class="insight" style="margin-bottom:1rem">
+    La polaire de vol donne le <strong>taux de chute vertical</strong> en fonction de la vitesse horizontale. Le <strong>point bas</strong> = taux de chute minimal (Vms). La <strong>tangente depuis l'origine</strong> = vitesse de meilleure finesse (Vmd). Plus la courbe est basse, meilleur est le planeur.
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <h3>Sélection des entités (échelle biologique 0–250 km/h)</h3>
+    <div class="polar-controls" id="polarToggles1"></div>
+    <div class="chart-wrap" style="height:380px"><canvas id="polarChart1"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Planeurs &amp; engins à voilure fixe (0–300 km/h)</h3>
+    <div class="polar-controls" id="polarToggles2"></div>
+    <div class="chart-wrap" style="height:380px"><canvas id="polarChart2"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 3: FINESSE ═══════════════ -->
+<div id="tab-finesse" class="tab-content fi">
+  <div class="stitle">Finesse maximale (L/D) &amp; Taux de chute minimal</div>
+  <div class="grid2" style="margin-bottom:1.5rem">
+    <div class="insight">
+      La <strong>finesse (rapport portance/traînée)</strong> mesure l'efficacité aérodynamique pure : une finesse de 20 signifie qu'on avance de 20 m pour chaque mètre de descente. Les <strong>planeurs modernes</strong> (60:1) écrasent la biologie (23:1 max). Mais les oiseaux planeurs ont évolué sans moteur pendant 150 millions d'années.
+    </div>
+    <div class="insight">
+      Le <strong>taux de chute minimal</strong> (Vz min en m/s) définit la capacité à rester en l'air dans les courants faibles. L'albatros (0.58 m/s) et la frégate (0.44 m/s) sont proches du planeur standard. La <strong>frégate superbe</strong> peut rester en vol sans jamais se poser sur l'eau — semaines entières.
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card" id="finesse-chart-card">
+      <h3>Finesse maximale L/D — classement</h3>
+      <div id="finesseList"></div>
+    </div>
+    <div class="card" id="sink-chart-card">
+      <h3>Taux de chute minimal Vzmin (m/s) — classement ascendant</h3>
+      <div id="sinkList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 4: PHYSIQUE ═══════════════ -->
+<div id="tab-physique" class="tab-content fi">
+  <div class="stitle">Physique du vol — charge alaire, allongement, Reynolds</div>
+  <div class="grid2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <h3>Charge alaire (kg/m²) vs Finesse maximale</h3>
+      <div class="scatter-wrap"><canvas id="scatterWL"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Allongement (Aspect Ratio) vs Finesse maximale</h3>
+      <div class="scatter-wrap"><canvas id="scatterAR"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <h3>Régime de Reynolds et domaine de vol</h3>
+    <div class="insight" style="margin-bottom:1rem">
+      Le nombre de Reynolds (Re = ρVL/μ) caractérise le régime d'écoulement. À bas Re (insectes), la viscosité domine et les profils d'ailes classiques ne fonctionnent pas. Les oiseaux opèrent dans une zone de transition complexe où la transition laminaire→turbulent est critique pour la portance.
+    </div>
+    <div id="reynoldsViz"></div>
+  </div>
+  <div class="card">
+    <h3>Matrice des régimes de vol flyables</h3>
+    <div id="regimeMatrix"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 5: TABLE ═══════════════ -->
+<div id="tab-table" class="tab-content fi">
+  <div class="stitle">Tableau comparatif complet <span class="note">— cliquer les en-têtes pour trier</span></div>
+  <div class="card">
+    <div class="tbl-wrap"><table id="mainTable"></table></div>
+  </div>
+</div>
+
+</main>
+
+<footer style="margin-top:3rem;padding:1.25rem;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:0.72rem">
+  AeroVision Pro · Données issues de la littérature aéronautique et ornithologique · Polaires = approximation parabolique standard (Pennycuick) · Valeurs mesurées marquées distinctement
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATASET — 25 entités volantes
+// vMin=vitesse mini (km/h), vMs=vitesse taux de chute mini, wMin=taux de chute mini (m/s)
+// vMd=vitesse meilleure finesse (km/h), LD=finesse max, vCruise=vitesse de croisière
+// vMax=vitesse max (km/h), WL=charge alaire (kg/m²), AR=allongement
+// altMax=plafond (m), Re=Reynolds typique (ordre de grandeur)
+// ═══════════════════════════════════════════════════
+const E = [
+  // ──── ANIMAUX ────
+  { id:'albatross', type:'animal', emoji:'🦤', name:'Albatros hurleur',      sub:'Diomedea exulans',
+    propulsion:'Planage dynamique',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:35,vMs:41,wMin:0.58,vMd:54,LD:22,vCruise:55,vMax:145,WL:14,AR:15,altMax:3000,
+    Re:'5×10⁵',ReN:500000, color:'#FF8F00',
+    note:"Maître du vol dynamique. Envergure jusqu'à 3.5m. Vole des semaines sans se poser."
+  },
+  { id:'condor',    type:'animal', emoji:'🦅', name:'Condor des Andes',       sub:'Vultur gryphus',
+    propulsion:'Thermique/ascendances',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:48,vMs:42,wMin:0.65,vMd:55,LD:23,vCruise:55,vMax:130,WL:11,AR:7.5,altMax:5500,
+    Re:'8×10⁵',ReN:800000, color:'#F4511E',
+    note:"Meilleure finesse du monde animal. Plane des heures sans battre des ailes sur les Andes."
+  },
+  { id:'swift',     type:'animal', emoji:'🐦', name:'Martinet noir',           sub:'Apus apus',
+    propulsion:'Battement/vol propulsé',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:40,vMs:46,wMin:1.6,vMd:60,LD:10,vCruise:90,vMax:170,WL:6,AR:10,altMax:3000,
+    Re:'1.5×10⁵',ReN:150000, color:'#8D6E63',
+    note:"Vit quasiment entièrement en vol. Dort et s'accouple en vol. Vitesse de croisière record pour un oiseau."
+  },
+  { id:'falcon',    type:'animal', emoji:'🦅', name:'Faucon pèlerin',          sub:'Falco peregrinus',
+    propulsion:'Vol battu + piqué',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:38,vMs:49,wMin:1.4,vMd:65,LD:10,vCruise:65,vMax:389,WL:18,AR:5,altMax:3000,
+    Re:'3×10⁵',ReN:300000, color:'#FF5722',
+    note:"389 km/h en piqué — animal le plus rapide sur Terre. Ailes falciformes repliées en piqué."
+  },
+  { id:'eagle',     type:'animal', emoji:'🦅', name:'Aigle royal',             sub:'Aquila chrysaetos',
+    propulsion:'Planage/vol battu',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:35,vMs:38,wMin:0.85,vMd:50,LD:15,vCruise:50,vMax:240,WL:10,AR:7,altMax:3600,
+    Re:'6×10⁵',ReN:600000, color:'#BF360C',
+    note:"Ailes à empennames digitées pour contrôle fin en thermique. Manœuvrabilité exceptionnelle."
+  },
+  { id:'goose',     type:'animal', emoji:'🪶', name:'Bernache tête barrée',    sub:'Anser indicus',
+    propulsion:'Vol battu actif',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:55,vMs:61,wMin:2.3,vMd:80,LD:8,vCruise:80,vMax:120,WL:20,AR:9,altMax:9000,
+    Re:'8×10⁵',ReN:800000, color:'#607D8B',
+    note:"Vole à 9000m d'altitude au-dessus de l'Himalaya. Migration Sibérie→Inde sans escale."
+  },
+  { id:'frigate',   type:'animal', emoji:'🦤', name:'Frégate superbe',         sub:'Fregata magnificens',
+    propulsion:'Planage + courants',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:28,vMs:29,wMin:0.44,vMd:38,LD:22,vCruise:45,vMax:150,WL:8,AR:12,altMax:2500,
+    Re:'3×10⁵',ReN:300000, color:'#3E2723',
+    note:"Charge alaire la plus basse (8 kg/m²) et taux de chute parmi les plus faibles du monde animal. Ne peut pas nager — reste en vol permanent."
+  },
+  { id:'crane',     type:'animal', emoji:'🪶', name:'Grue cendrée',            sub:'Grus grus',
+    propulsion:'Vol battu en V',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:55,vMs:53,wMin:1.2,vMd:70,LD:14,vCruise:70,vMax:100,WL:15,AR:9,altMax:2000,
+    Re:'7×10⁵',ReN:700000, color:'#78909C',
+    note:"Migration en formation en V : économie d'énergie de 20-30% grâce à l'effet de sillage."
+  },
+  { id:'hummingbird',type:'animal',emoji:'🐦',name:'Colibri à gorge rubis',   sub:'Archilochus colubris',
+    propulsion:'Vol stationnaire (50Hz)',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
+    vMin:0,vMs:null,wMin:0.05,vMd:25,LD:2,vCruise:40,vMax:80,WL:4,AR:4,altMax:2000,
+    Re:'2×10⁴',ReN:20000, color:'#4CAF50',
+    note:"Vol stationnaire pur. 50 battements/seconde. Seul oiseau capable de vol en marche arrière. Consomme 6x son poids en nectar/jour."
+  },
+  { id:'butterfly',  type:'animal',emoji:'🦋',name:'Papillon monarque',        sub:'Danaus plexippus',
+    propulsion:'Battement + planage',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:8,vMs:15,wMin:1.0,vMd:20,LD:4,vCruise:20,vMax:35,WL:0.3,AR:3,altMax:3000,
+    Re:'3×10³',ReN:3000, color:'#FF8F00',
+    note:"Migration de 4500 km (Canada→Mexique) avec finesse=4 et corps de 0.5g. Exploit de navigation magnétique."
+  },
+  { id:'dragonfly',  type:'animal',emoji:'🪲',name:'Libellule',                sub:'Anax imperator',
+    propulsion:'4 ailes indépendantes',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
+    vMin:5,vMs:21,wMin:1.2,vMd:28,LD:5,vCruise:30,vMax:55,WL:0.5,AR:6,altMax:500,
+    Re:'5×10³',ReN:5000, color:'#26C6DA',
+    note:"4 ailes actionnées indépendamment — manœuvrabilité hors norme. Taux de capture de proies en vol : 95%."
+  },
+  { id:'bat',        type:'animal',emoji:'🦇',name:'Grande Noctule',           sub:'Nyctalus lasiopterus',
+    propulsion:'Aile membraneuse battante',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:12,vMs:27,wMin:1.0,vMd:35,LD:7,vCruise:40,vMax:90,WL:3,AR:6,altMax:1500,
+    Re:'8×10⁴',ReN:80000, color:'#7B1FA2',
+    note:"Navigation par écholocation (200 kHz). Aile morphante à 25 degrés de liberté. Vole jusqu'à 3000m d'altitude la nuit."
+  },
+
+  // ──── MACHINES ────
+  { id:'asw22',   type:'machine',emoji:'⬜',name:'Planeur ASW-22',            sub:'Schleicher ASW-22',
+    propulsion:'Aucune (planeur pur)',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:70,vMs:95,wMin:0.38,vMd:121,LD:60,vCruise:120,vMax:280,WL:44,AR:30,altMax:8000,
+    Re:'8×10⁶',ReN:8000000, color:'#00BCD4',
+    note:"Finesse 60:1 — record mondial pour planeurs. Profil laminaire. Eau de ballast variable."
+  },
+  { id:'ls8',     type:'machine',emoji:'⬜',name:'Planeur LS8',               sub:'DG-Flugzeugbau LS8',
+    propulsion:'Aucune (planeur pur)',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:65,vMs:86,wMin:0.52,vMd:110,LD:46,vCruise:110,vMax:250,WL:35,AR:23,altMax:7000,
+    Re:'6×10⁶',ReN:6000000, color:'#26C6DA',
+    note:"Planeur 15m de référence en compétition mondiale. Profil laminaire NLF. Traîne minime."
+  },
+  { id:'hangglider',type:'machine',emoji:'🪁',name:'Deltaplane (compétition)',sub:'Aeros Combat C',
+    propulsion:'Aucune / poids pilote',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:30,vMs:42,wMin:0.9,vMd:55,LD:14,vCruise:55,vMax:135,WL:6,AR:8,altMax:5000,
+    Re:'1×10⁶',ReN:1000000, color:'#0097A7',
+    note:"Structure composite rigide. Rivalise avec les grands rapaces en finesse. Décollage à pied."
+  },
+  { id:'paraglider',type:'machine',emoji:'🪂',name:'Parapente (EN-D)',        sub:'Ozone Enzo 3',
+    propulsion:'Aucune / voile souple',hover:false,vtol:false,soaring:true,speedReg:'subsonic',
+    vMin:25,vMs:32,wMin:1.0,vMd:42,LD:12,vCruise:40,vMax:70,WL:5,AR:6.5,altMax:7000,
+    Re:'5×10⁵',ReN:500000, color:'#4DD0E1',
+    note:"Aile gonflable sans structure rigide. Finesse ≈ albatros. Record de distance : 634 km en une journée."
+  },
+  { id:'ultralight',type:'machine',emoji:'🛩️',name:'ULM Pipistrel Sinus',   sub:'Pipistrel Sinus 912',
+    propulsion:'Rotax 80ch (ULM)',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:65,vMs:76,wMin:0.85,vMd:100,LD:28,vCruise:145,vMax:200,WL:22,AR:15,altMax:4000,
+    Re:'3×10⁶',ReN:3000000, color:'#80DEEA',
+    note:"Avion à motorisation légère. Finesse 28 moteur coupé — parmi les meilleurs de l'aviation légère."
+  },
+  { id:'solar',    type:'machine',emoji:'☀️',name:'Solar Impulse 2',          sub:'HB-SIB',
+    propulsion:'Solaire électrique',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:55,vMs:57,wMin:0.5,vMd:75,LD:40,vCruise:70,vMax:140,WL:9,AR:21,altMax:8500,
+    Re:'2×10⁶',ReN:2000000, color:'#FFF176',
+    note:"Tour du monde sans carburant. Finesse remarquable pour un avion solaire. Envergure 72m (Boeing 747 : 68m) pour 2.3 tonnes."
+  },
+  { id:'evtol',    type:'machine',emoji:'🚕',name:'eVTOL Joby S4',            sub:'Joby Aviation S4',
+    propulsion:'Électrique distribué',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
+    vMin:0,vMs:120,wMin:2.0,vMd:160,LD:15,vCruise:240,vMax:322,WL:120,AR:8,altMax:1500,
+    Re:'4×10⁶',ReN:4000000, color:'#B2EBF2',
+    note:"6 rotors inclinables. VTOL électrique. Taux de charge actuelle = 15% MTOW — principal défi."
+  },
+  { id:'a320',     type:'machine',emoji:'✈️',name:'Airbus A320neo',           sub:'CFM LEAP-1A',
+    propulsion:'Turbofan double flux',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:220,vMs:320,wMin:6.0,vMd:420,LD:17,vCruise:833,vMax:876,WL:750,AR:9.5,altMax:12000,
+    Re:'4×10⁷',ReN:40000000, color:'#0288D1',
+    note:"Référence moyen-courrier. Finesse moteur coupé = 17:1. Consomme 2.5L/100km/passager."
+  },
+  { id:'b787',     type:'machine',emoji:'✈️',name:'Boeing 787-9 Dreamliner',  sub:'GEnx / Rolls-Royce Trent',
+    propulsion:'Turbofan haute dilution',hover:false,vtol:false,soaring:false,speedReg:'transonic',
+    vMin:240,vMs:350,wMin:5.0,vMd:450,LD:21,vCruise:903,vMax:954,WL:800,AR:10,altMax:13100,
+    Re:'6×10⁷',ReN:60000000, color:'#039BE5',
+    note:"Fuselage CFRP, aile composite. L/D=21 est proche du record pour un long-courrier commercial. Économies carburant 20% vs 767."
+  },
+  { id:'helicopter',type:'machine',emoji:'🚁',name:'Airbus H145',             sub:'Safran Arriel 2E',
+    propulsion:'Turbine rotor principal',hover:true,vtol:true,soaring:false,speedReg:'subsonic',
+    vMin:0,vMs:100,wMin:5.5,vMd:130,LD:4,vCruise:230,vMax:260,WL:40,AR:0,altMax:7300,
+    Re:'2×10⁶',ReN:2000000, color:'#1565C0',
+    note:"Voilure tournante — hover pur mais pénalité énorme en efficacité. Finesse en autorotation ≈ 4:1."
+  },
+  { id:'f22',      type:'machine',emoji:'🛩️',name:'F-22 Raptor',             sub:'Lockheed Martin / P&W F119',
+    propulsion:'Postcombustion variable',hover:false,vtol:false,soaring:false,speedReg:'supersonic',
+    vMin:185,vMs:380,wMin:22,vMd:500,LD:6,vCruise:1900,vMax:2410,WL:450,AR:2.4,altMax:19800,
+    Re:'3×10⁸',ReN:300000000, color:'#1A237E',
+    note:"Supercruise Mach 1.82 sans postcombustion. Agilité supersonique record. L/D faible = performances ≠ efficacité."
+  },
+  { id:'concorde', type:'machine',emoji:'⚡',name:'Concorde',                 sub:'Aérospatiale / Bristol',
+    propulsion:'Turboréacteur Olympus 593',hover:false,vtol:false,soaring:false,speedReg:'supersonic',
+    vMin:295,vMs:600,wMin:25,vMd:800,LD:7,vCruise:2179,vMax:2435,WL:900,AR:1.8,altMax:18300,
+    Re:'5×10⁸',ReN:500000000, color:'#283593',
+    note:"L/D=7 supersonique vs 4.5 pour navette spatiale. Aile delta ogival. Paris-New York en 3h30."
+  },
+  { id:'x43',      type:'machine',emoji:'🚀',name:'NASA X-43A Scramjet',      sub:'Hyper-X Program',
+    propulsion:'Scramjet H₂',hover:false,vtol:false,soaring:false,speedReg:'hypersonic',
+    vMin:7000,vMs:8000,wMin:80,vMd:9000,LD:3.5,vCruise:11000,vMax:11265,WL:650,AR:2.5,altMax:33500,
+    Re:'10⁹',ReN:1000000000, color:'#AD1457',
+    note:"Record mondial : Mach 9.8 (11 265 km/h) en 2004. Vol de 10 secondes. Température stagnation > 2000°C. Finesse mesurée ≈ 3.5."
+  },
+  { id:'wingsuit', type:'machine',emoji:'🧑',name:'Wingsuit humain',           sub:'Squirrel / Tony Suit',
+    propulsion:'Corps humain / gravité',hover:false,vtol:false,soaring:false,speedReg:'subsonic',
+    vMin:110,vMs:137,wMin:28,vMd:180,LD:3.5,vCruise:190,vMax:250,WL:80,AR:1.5,altMax:5000,
+    Re:'5×10⁶',ReN:5000000, color:'#6A1B9A',
+    note:"L/D=3.5 pour le corps humain équipé. Taux de chute minimum = 28 m/s — n'est pas un planeur! Vitesse horizontale record : 314 km/h."
+  },
+];
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function scoreColor(v){ if(v<=30)return'#ff1744';if(v<=50)return'#ff6b35';if(v<=65)return'#ffd600';if(v<=80)return'#00e676';return'#00bcd4'}
+function ldColor(v){ if(v<5)return'#ff1744';if(v<10)return'#ff6b35';if(v<18)return'#ffd600';if(v<30)return'#00e676';return'#00bcd4'}
+function wminColor(v){ if(v>10)return'#ff1744';if(v>3)return'#ff6b35';if(v>1.2)return'#ffd600';if(v>0.6)return'#00e676';return'#00bcd4'}
+function typeColor(e){ return e.type==='animal' ? '#FF8F00' : '#00BCD4'}
+function typeColorAlpha(e,a){ return e.type==='animal'?`rgba(255,143,0,${a})`:`rgba(0,188,212,${a})`}
+
+// ═══════════════════════════════════════════════════
+// POLAR CURVE COMPUTATION
+// w(V) = V/(2*LD) * ((V/Vmd)² + (Vmd/V)²) — parabolique standard
+// V in m/s, output w in m/s
+// ═══════════════════════════════════════════════════
+function computePolar(LD, VmdKmh, VminKmh, VmaxKmh, n=40){
+  const Vmd = VmdKmh/3.6, Vmin = Math.max(VminKmh/3.6, 0.5);
+  const Vmax = Math.min(VmaxKmh/3.6, VmdKmh*2.5/3.6);
+  const pts = [];
+  for(let i=0;i<=n;i++){
+    const frac = i/n;
+    // use exponential spacing for better low-speed coverage
+    const V = Vmin * Math.pow(Vmax/Vmin, frac);
+    if(V<=0) continue;
+    const r = V/Vmd, ri = Vmd/V;
+    const w = V/(2*LD) * (r*r + ri*ri);
+    pts.push({x: V*3.6, y: w});
+  }
+  return pts;
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 1 — SPEED REGIMES
+// ═══════════════════════════════════════════════════
+function buildSpeedChart(){
+  const wrap = document.getElementById('speedChartWrap');
+  const all = E;
+  const vGlobalMin = 5, vGlobalMax = 15000;
+  const logScale = v => (Math.log10(Math.max(v,1)) - Math.log10(vGlobalMin)) / (Math.log10(vGlobalMax)-Math.log10(vGlobalMin));
+
+  const scaleLabels = [5,10,30,80,200,500,1200,3000,8000,15000];
+  let html = '';
+
+  // Scale ruler
+  html += `<div class="speed-scale">`;
+  html += scaleLabels.map(v=>`<span>${v>999?(v/1000+'k'):v}</span>`).join('');
+  html += `</div>`;
+
+  ['animal','machine'].forEach(type=>{
+    html += `<div class="speed-group-label">${type==='animal'?'🦅 Animaux':'⚙️ Machines'}</div>`;
+    const group = all.filter(e=>e.type===type).sort((a,b)=>a.vMax-b.vMax);
+    group.forEach(ent=>{
+      const left = logScale(Math.max(ent.vMin,1))*100;
+      const right = logScale(Math.min(ent.vMax,vGlobalMax))*100;
+      const width = right-left;
+      const cruisePos = logScale(ent.vCruise)*100;
+      const vmdPos = logScale(ent.vMd)*100;
+      const col = ent.color || typeColor(ent);
+
+      html += `<div class="speed-row" title="${ent.name}: ${ent.vMin}–${ent.vMax} km/h">
+        <div class="speed-label">${ent.emoji} <span>${ent.name.length>22?ent.name.slice(0,22)+'…':ent.name}</span></div>
+        <div class="speed-track">
+          <div class="speed-bar" style="left:${left}%;width:${width}%;background:${col}44;border:1px solid ${col}"></div>
+          <div class="speed-dot" style="left:${cruisePos}%;background:${col}99;border:1px solid ${col}"></div>
+          <div class="speed-dot" style="left:${vmdPos}%;background:#ffffff;border:1px solid ${col};width:4px"></div>
+        </div>
+        <span style="font-size:0.65rem;color:var(--muted);white-space:nowrap">${ent.vMin}–<b style="color:${col}">${ent.vMax}</b> km/h</span>
+      </div>`;
+    });
+  });
+
+  html += `<div style="margin-top:0.75rem;font-size:0.68rem;color:var(--muted)">
+    Échelle logarithmique · <span style="color:#aaa">██</span> plage de vol · 
+    <span style="font-size:0.85rem">●</span> Vcruise · 
+    <span style="color:#fff;font-size:0.85rem">|</span> Vmd (meilleure finesse)
+  </div>`;
+
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 2 — POLAIRES
+// ═══════════════════════════════════════════════════
+let pChart1=null, pChart2=null;
+const polarGroups = {
+  group1: ['albatross','condor','swift','falcon','eagle','frigate','hummingbird','butterfly','dragonfly','bat','crane','goose','hangglider','paraglider','solar','ultralight'],
+  group2: ['asw22','ls8','hangglider','paraglider','ultralight','solar','evtol','albatross','condor','frigate'],
+};
+const polar1Active = new Set(polarGroups.group1);
+const polar2Active = new Set(polarGroups.group2);
+
+function buildPolarToggles(groupKey, activeSet, containerId, onUpdate){
+  const wrap = document.getElementById(containerId);
+  polarGroups[groupKey].forEach(id=>{
+    const ent = E.find(e=>e.id===id);
+    if(!ent) return;
+    const btn = document.createElement('button');
+    btn.className='polar-toggle '+(activeSet.has(id)?'on':'off');
+    btn.textContent = ent.emoji+' '+ent.name.split(' ')[0];
+    btn.style.borderColor = ent.color||typeColor(ent);
+    btn.style.color = ent.color||typeColor(ent);
+    btn.onclick=()=>{
+      if(activeSet.has(id)) activeSet.delete(id); else activeSet.add(id);
+      btn.className='polar-toggle '+(activeSet.has(id)?'on':'off');
+      onUpdate();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function polarDatasets(groupKey, activeSet, vMaxDisplay){
+  return polarGroups[groupKey].filter(id=>activeSet.has(id)).map(id=>{
+    const ent = E.find(e=>e.id===id);
+    const col = ent.color||typeColor(ent);
+    const pts = computePolar(ent.LD, Math.min(ent.vMd, vMaxDisplay*0.9), Math.max(ent.vMin,5), vMaxDisplay);
+    // Star point = actual (vMs, wMin)
+    const starPt = ent.vMs ? [{x:ent.vMs, y:ent.wMin}] : [];
+    return [
+      {
+        label: ent.emoji+' '+ent.name,
+        data: pts,
+        borderColor: col, backgroundColor:'transparent',
+        borderWidth:2, pointRadius:0, tension:0.4, type:'line',
+      },
+      {
+        label: ent.name+' ★',
+        data: [{x:ent.vMd, y:ent.vMd/3.6/ent.LD}],
+        borderColor:col, backgroundColor:col,
+        pointRadius:5, pointStyle:'circle', type:'scatter', showLine:false,
+      },
+    ];
+  }).flat();
+}
+
+function makePolarChart(canvasId, datasets, xMax, yMax){
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx,{
+    type:'scatter',
+    data:{datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{min:0,max:xMax,title:{display:true,text:'Vitesse (km/h)',color:'#6a8daa'},
+          ticks:{color:'#6a8daa',stepSize:20},grid:{color:'rgba(26,46,69,0.5)'},
+          type:'linear'},
+        y:{min:0,max:yMax,reverse:false,
+          title:{display:true,text:'Taux de chute (m/s) ↓',color:'#6a8daa'},
+          ticks:{color:'#6a8daa'},grid:{color:'rgba(26,46,69,0.5)'}},
+      },
+      plugins:{
+        legend:{position:'bottom',labels:{color:'#6a8daa',font:{size:10},boxWidth:20,padding:8,
+          filter:item=>!item.text.includes('★')}},
+        tooltip:{callbacks:{label:item=>`${item.dataset.label}: V=${item.parsed.x.toFixed(0)} km/h, Vz=${item.parsed.y.toFixed(2)} m/s`}}
+      }
+    }
+  });
+}
+
+function buildPolaires(){
+  buildPolarToggles('group1',polar1Active,'polarToggles1',()=>{
+    pChart1.data.datasets=polarDatasets('group1',polar1Active,250);
+    pChart1.update();
+  });
+  buildPolarToggles('group2',polar2Active,'polarToggles2',()=>{
+    pChart2.data.datasets=polarDatasets('group2',polar2Active,300);
+    pChart2.update();
+  });
+  pChart1=makePolarChart('polarChart1',polarDatasets('group1',polar1Active,250),250,5);
+  pChart2=makePolarChart('polarChart2',polarDatasets('group2',polar2Active,300),300,3);
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 3 — FINESSE & SINK
+// ═══════════════════════════════════════════════════
+function buildFinesse(){
+  // L/D sorted descending
+  const sorted = [...E].sort((a,b)=>b.LD-a.LD);
+  const maxLD = sorted[0].LD;
+  let html1='', html2='';
+
+  sorted.forEach(e=>{
+    const pct = (e.LD/maxLD*100).toFixed(1);
+    const col = e.color||typeColor(e);
+    const typeBadge = e.type==='animal'
+      ? `<span class="badge" style="background:rgba(255,143,0,0.15);color:#FF8F00">Animal</span>`
+      : `<span class="badge" style="background:rgba(0,188,212,0.15);color:#00BCD4">Machine</span>`;
+    html1+=`<div class="hbar-row">
+      <div class="hbar-label">${typeBadge} ${e.emoji} <span style="color:${col}">${e.name.length>18?e.name.slice(0,18)+'…':e.name}</span></div>
+      <div class="hbar-bg"><div class="hbar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="hbar-val" style="color:${ldColor(e.LD)}">${e.LD}:1</div>
+    </div>`;
+  });
+  document.getElementById('finesseList').innerHTML=html1;
+
+  // Sink sorted ascending
+  const sorted2 = [...E].sort((a,b)=>a.wMin-b.wMin);
+  const maxW = sorted2[sorted2.length-1].wMin;
+  sorted2.forEach(e=>{
+    const pct = (e.wMin/maxW*100).toFixed(1);
+    const col = e.color||typeColor(e);
+    html2+=`<div class="hbar-row">
+      <div class="hbar-label">${e.emoji} <span style="color:${col}">${e.name.length>22?e.name.slice(0,22)+'…':e.name}</span></div>
+      <div class="hbar-bg"><div class="hbar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="hbar-val" style="color:${wminColor(e.wMin)}">${e.wMin} m/s</div>
+    </div>`;
+  });
+  document.getElementById('sinkList').innerHTML=html2;
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 4 — PHYSIQUE
+// ═══════════════════════════════════════════════════
+let scWL=null, scAR=null;
+function buildPhysique(){
+  const makeDataset=(type,label)=>({
+    label,
+    data: E.filter(e=>e.type===type && e.WL>0 && e.AR>0).map(e=>({x:e.WL,y:e.LD,label:e.emoji+' '+e.name.split(' ')[0]})),
+    backgroundColor: type==='animal'? 'rgba(255,143,0,0.7)' : 'rgba(0,188,212,0.7)',
+    borderColor: type==='animal'? '#FF8F00' : '#00BCD4',
+    borderWidth:1, pointRadius:7,
+  });
+
+  const common={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{color:'#6a8daa',font:{size:11}}},
+      tooltip:{callbacks:{label:i=>`${i.raw.label}: WL=${i.parsed.x} kg/m², L/D=${i.parsed.y}`}}
+    }
+  };
+
+  // WL vs LD
+  scWL=new Chart(document.getElementById('scatterWL').getContext('2d'),{
+    type:'scatter',
+    data:{datasets:[makeDataset('animal','Animaux'),makeDataset('machine','Machines')]},
+    options:{...common,
+      scales:{
+        x:{type:'logarithmic',title:{display:true,text:'Charge alaire (kg/m²) — log',color:'#6a8daa'},
+          ticks:{color:'#6a8daa'},grid:{color:'rgba(26,46,69,0.5)'}},
+        y:{title:{display:true,text:'Finesse maximale (L/D)',color:'#6a8daa'},
+          ticks:{color:'#6a8daa'},grid:{color:'rgba(26,46,69,0.5)'}},
+      }
+    }
+  });
+
+  // AR vs LD
+  const makeDatasetAR=(type,label)=>({
+    label,
+    data: E.filter(e=>e.type===type && e.AR>0).map(e=>({x:e.AR,y:e.LD,label:e.emoji+' '+e.name.split(' ')[0]})),
+    backgroundColor: type==='animal'? 'rgba(255,143,0,0.7)' : 'rgba(0,188,212,0.7)',
+    borderColor: type==='animal'? '#FF8F00' : '#00BCD4',
+    borderWidth:1, pointRadius:7,
+  });
+  scAR=new Chart(document.getElementById('scatterAR').getContext('2d'),{
+    type:'scatter',
+    data:{datasets:[makeDatasetAR('animal','Animaux'),makeDatasetAR('machine','Machines')]},
+    options:{...common,
+      scales:{
+        x:{title:{display:true,text:'Allongement (Aspect Ratio)',color:'#6a8daa'},
+          ticks:{color:'#6a8daa'},grid:{color:'rgba(26,46,69,0.5)'}},
+        y:{title:{display:true,text:'Finesse maximale (L/D)',color:'#6a8daa'},
+          ticks:{color:'#6a8daa'},grid:{color:'rgba(26,46,69,0.5)'}},
+      }
+    }
+  });
+
+  // Reynolds visualization
+  const reGroups=[
+    {label:'Micro (insectes <1cm)',range:'Re < 10⁴',color:'#ff1744',entities:['butterfly','dragonfly']},
+    {label:'Bio-petit (petits oiseaux)',range:'10⁴ – 2×10⁵',color:'#ff6b35',entities:['hummingbird','bat','swift']},
+    {label:'Bio-grand (grands oiseaux)',range:'2×10⁵ – 10⁶',color:'#ffd600',entities:['albatross','condor','falcon','eagle','frigate','crane','goose']},
+    {label:'Aviation légère',range:'10⁶ – 10⁷',color:'#00e676',entities:['hangglider','paraglider','ultralight','solar','ls8','asw22','helicopter']},
+    {label:'Aviation commerciale',range:'10⁷ – 10⁸',color:'#00bcd4',entities:['a320','b787','evtol','f22']},
+    {label:'Haute vitesse / supersonique',range:'> 10⁸',color:'#ce93d8',entities:['concorde','x43']},
+  ];
+  let reHtml='<div style="display:flex;flex-direction:column;gap:0.6rem">';
+  reGroups.forEach(g=>{
+    const ents=g.entities.map(id=>E.find(e=>e.id===id)).filter(Boolean);
+    reHtml+=`<div style="display:flex;align-items:center;gap:1rem;background:var(--surface2);border-radius:8px;padding:0.6rem 1rem;border-left:3px solid ${g.color}">
+      <div style="min-width:170px">
+        <div style="font-size:0.72rem;font-weight:700;color:${g.color}">${g.label}</div>
+        <div style="font-size:0.65rem;color:var(--muted)">Re = ${g.range}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.35rem">
+        ${ents.map(e=>`<span style="font-size:0.72rem;padding:2px 7px;border-radius:10px;background:${typeColorAlpha(e,0.12)};border:1px solid ${typeColorAlpha(e,0.3)};color:${e.color||typeColor(e)}">${e.emoji} ${e.name.split(' ')[0]}</span>`).join('')}
+      </div>
+    </div>`;
+  });
+  reHtml+='</div>';
+  document.getElementById('reynoldsViz').innerHTML=reHtml;
+
+  // Regime matrix
+  const regimeCols=[
+    {key:'hover',label:'Vol stationnaire',icon:'🕊️'},
+    {key:'vtol',label:'VTOL',icon:'⬆️'},
+    {key:'soaring',label:'Planage thermique',icon:'🌀'},
+    {key:'speedReg',label:'Régime vitesse',icon:'⚡'},
+  ];
+  const speedRegLabels={subsonic:'Subsonique',transonic:'Transsonique',supersonic:'Supersonique',hypersonic:'Hypersonique'};
+  const speedRegColors={subsonic:'#00e676',transonic:'#ffd600',supersonic:'#ff6b35',hypersonic:'#ff1744'};
+
+  let mHtml='<div style="overflow-x:auto"><table style="border-collapse:separate;border-spacing:4px;min-width:800px">';
+  mHtml+=`<tr><th style="background:transparent;color:var(--muted);font-size:0.7rem;padding:0.5rem">Entité</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Hover</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">VTOL</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Planage</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Régime</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Vmax km/h</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">L/D</th>
+    <th style="background:rgba(26,46,69,0.5);font-size:0.7rem">Vzmin m/s</th>
+  </tr>`;
+  E.forEach(e=>{
+    const src=speedRegColors[e.speedReg]||'#aaa';
+    const check='<span style="color:#00e676;font-size:1rem">✓</span>';
+    const cross='<span style="color:#334;font-size:0.8rem">—</span>';
+    mHtml+=`<tr>
+      <td style="font-size:0.78rem;white-space:nowrap">${e.emoji} <span style="color:${e.color||typeColor(e)};font-weight:600">${e.name}</span></td>
+      <td style="text-align:center">${e.hover?check:cross}</td>
+      <td style="text-align:center">${e.vtol?check:cross}</td>
+      <td style="text-align:center">${e.soaring?check:cross}</td>
+      <td><span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;background:${src}22;color:${src};font-weight:700">${speedRegLabels[e.speedReg]||e.speedReg}</span></td>
+      <td style="font-weight:700;color:${e.type==='animal'?'#FF8F00':'#00BCD4'}">${e.vMax}</td>
+      <td style="font-weight:700;color:${ldColor(e.LD)}">${e.LD}</td>
+      <td style="font-weight:700;color:${wminColor(e.wMin)}">${e.wMin}</td>
+    </tr>`;
+  });
+  mHtml+='</table></div>';
+  document.getElementById('regimeMatrix').innerHTML=mHtml;
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 5 — TABLE
+// ═══════════════════════════════════════════════════
+let tableSortKey='LD', tableSortDir=-1;
+function buildTable(){
+  const cols=[
+    {key:'name',label:'Entité',render:e=>`<span style="color:${e.color||typeColor(e)};font-weight:600">${e.emoji} ${e.name}</span><br><span style="font-size:0.65rem;color:var(--muted)">${e.sub}</span>`},
+    {key:'type',label:'Type',render:e=>`<span class="badge" style="background:${e.type==='animal'?'rgba(255,143,0,0.15)':'rgba(0,188,212,0.15)'};color:${e.type==='animal'?'#FF8F00':'#00BCD4'}">${e.type==='animal'?'Animal':'Machine'}</span>`},
+    {key:'vMin',label:'Vmin km/h',render:e=>`${e.vMin}`},
+    {key:'vMs',label:'Vms km/h',render:e=>`${e.vMs||'—'}`},
+    {key:'wMin',label:'Vzmin m/s',render:e=>`<span style="font-weight:700;color:${wminColor(e.wMin)}">${e.wMin}</span>`},
+    {key:'vMd',label:'Vmd km/h',render:e=>`${e.vMd}`},
+    {key:'LD',label:'Finesse',render:e=>`<span style="font-weight:700;color:${ldColor(e.LD)}">${e.LD}:1</span>`},
+    {key:'vCruise',label:'Vcruise km/h',render:e=>`${e.vCruise}`},
+    {key:'vMax',label:'Vmax km/h',render:e=>`<b>${e.vMax}</b>`},
+    {key:'WL',label:'Charge al. kg/m²',render:e=>`${e.WL}`},
+    {key:'AR',label:'Allongement',render:e=>`${e.AR||'—'}`},
+    {key:'altMax',label:'Plafond m',render:e=>`${e.altMax.toLocaleString()}`},
+    {key:'Re',label:'Reynolds',render:e=>`<span style="font-size:0.72rem">${e.Re}</span>`},
+    {key:'speedReg',label:'Régime',render:e=>{
+      const c={subsonic:'#00e676',transonic:'#ffd600',supersonic:'#ff6b35',hypersonic:'#ff1744'};
+      return `<span class="badge" style="background:${c[e.speedReg]||'#aaa'}22;color:${c[e.speedReg]||'#aaa'}">${e.speedReg}</span>`;
+    }},
+  ];
+  const sorted=[...E].sort((a,b)=>{
+    const av=a[tableSortKey], bv=b[tableSortKey];
+    if(av===undefined||av===null)return 1;
+    if(bv===undefined||bv===null)return -1;
+    return tableSortDir*(typeof av==='number'?av-bv:String(av).localeCompare(String(bv)));
+  });
+  let html=`<thead><tr>${cols.map(c=>`<th onclick="sortTable('${c.key}')">${c.label} ${tableSortKey===c.key?(tableSortDir>0?'↑':'↓'):''}</th>`).join('')}</tr></thead>`;
+  html+=`<tbody>${sorted.map(e=>`<tr>${cols.map(c=>`<td>${c.render(e)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  document.getElementById('mainTable').innerHTML=html;
+}
+function sortTable(key){
+  if(tableSortKey===key) tableSortDir*=-1; else{tableSortKey=key;tableSortDir=-1;}
+  buildTable();
+}
+
+// ═══════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════
+const tabNames=['regimes','polaire','finesse','physique','table'];
+let built={regimes:true};
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabNames[i]===name));
+  document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+  const el=document.getElementById('tab-'+name);
+  el.classList.add('active');
+  el.classList.remove('fi'); void el.offsetWidth; el.classList.add('fi');
+  if(!built[name]){
+    built[name]=true;
+    if(name==='polaire') buildPolaires();
+    if(name==='finesse') buildFinesse();
+    if(name==='physique') buildPhysique();
+    if(name==='table') buildTable();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+buildSpeedChart();
+</script>
+</body>
+</html>

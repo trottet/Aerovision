@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AeroVision — Flying Machine Innovation Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0d1521;
+    --surface2: #111d2e;
+    --border: #1e3050;
+    --accent: #00d4ff;
+    --accent2: #0088cc;
+    --accent3: #ff6b35;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --red: #ff1744;
+    --text: #e8f4fd;
+    --muted: #7a9bb5;
+    --card: #0f1d30;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #080c14 0%, #0d2040 50%, #08142a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.25rem; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .logo-icon { font-size: 1.6rem; }
+  .header-sub { font-size: 0.75rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ── HERO ── */
+  .hero {
+    background: radial-gradient(ellipse at 50% 0%, #003366 0%, #080c14 70%);
+    text-align: center;
+    padding: 3rem 2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300d4ff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #ffffff, var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto 1.5rem; position: relative; }
+  .hero-stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    position: relative;
+  }
+  .hero-stat {
+    text-align: center;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+  }
+  .hero-stat .val { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .hero-stat .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── NAV TABS ── */
+  .tabs {
+    display: flex; overflow-x: auto; gap: 0; border-bottom: 1px solid var(--border);
+    background: var(--surface); padding: 0 1.5rem;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 0.9rem 1.4rem;
+    cursor: pointer; color: var(--muted);
+    font-size: 0.85rem; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── CATEGORY SELECTOR ── */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem; margin-bottom: 2rem;
+  }
+  .cat-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.85rem 0.75rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .cat-btn:hover { border-color: var(--accent2); background: var(--surface2); }
+  .cat-btn.active {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    box-shadow: 0 0 20px rgba(0,212,255,0.15);
+  }
+  .cat-btn .emoji { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+  .cat-btn .name { font-size: 0.75rem; font-weight: 600; }
+  .cat-btn .class { font-size: 0.65rem; color: var(--muted); }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  @media(max-width: 768px) { .detail-panel { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .card h3 {
+    font-size: 0.85rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+
+  /* ── MACHINE INFO ── */
+  .machine-header {
+    display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.2rem;
+  }
+  .machine-emoji { font-size: 3.5rem; }
+  .machine-title h2 { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+  .machine-title .subtitle { font-size: 0.8rem; color: var(--muted); }
+  .machine-title .examples {
+    font-size: 0.75rem; color: var(--accent3);
+    margin-top: 0.3rem; font-style: italic;
+  }
+
+  .metric-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+  .metric-label { font-size: 0.78rem; color: var(--muted); width: 130px; flex-shrink: 0; }
+  .metric-bar-bg {
+    flex: 1; height: 6px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden;
+  }
+  .metric-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .metric-val { font-size: 0.78rem; font-weight: 600; width: 30px; text-align: right; }
+
+  /* ── INNOVATION GAPS ── */
+  .gap-list { display: flex; flex-direction: column; gap: 0.65rem; }
+  .gap-item {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+  }
+  .gap-item.critical { border-color: var(--red); }
+  .gap-item.high { border-color: var(--accent3); }
+  .gap-item.medium { border-color: var(--yellow); }
+  .gap-item.low { border-color: var(--green); }
+  .gap-badge {
+    font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+    margin-top: 2px;
+  }
+  .critical .gap-badge { background: rgba(255,23,68,0.2); color: var(--red); }
+  .high .gap-badge { background: rgba(255,107,53,0.2); color: var(--accent3); }
+  .medium .gap-badge { background: rgba(255,214,0,0.2); color: var(--yellow); }
+  .low .gap-badge { background: rgba(0,230,118,0.2); color: var(--green); }
+  .gap-text { font-size: 0.8rem; line-height: 1.5; }
+  .gap-text strong { color: var(--text); }
+
+  /* ── RADAR CHART ── */
+  .chart-wrap { position: relative; height: 280px; }
+
+  /* ── COMPARISON TABLE (tab) ── */
+  .comparison-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    background: var(--surface2);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: var(--muted); font-weight: 600;
+    text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(30,48,80,0.5);
+    vertical-align: middle;
+  }
+  tr:hover td { background: rgba(0,212,255,0.03); }
+  .score-pill {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 20px;
+    font-weight: 700; font-size: 0.78rem;
+  }
+
+  /* ── INNOVATION MAP (tab) ── */
+  .inno-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+  .inno-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .inno-card:hover { border-color: var(--accent2); }
+  .inno-card-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .inno-card-header .ic { font-size: 1.8rem; }
+  .inno-card-title { font-size: 0.95rem; font-weight: 700; }
+  .inno-card-sub { font-size: 0.72rem; color: var(--muted); }
+  .opportunity-list { list-style: none; }
+  .opportunity-list li {
+    padding: 0.4rem 0;
+    font-size: 0.8rem; color: var(--muted);
+    border-bottom: 1px solid rgba(30,48,80,0.4);
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    line-height: 1.5;
+  }
+  .opportunity-list li:last-child { border-bottom: none; }
+  .opportunity-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+  .inno-tags {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem;
+  }
+  .tag {
+    font-size: 0.65rem; padding: 2px 7px;
+    border-radius: 20px; border: 1px solid;
+  }
+  .tag.tech { border-color: var(--accent2); color: var(--accent); background: rgba(0,136,204,0.1); }
+  .tag.env { border-color: var(--green); color: var(--green); background: rgba(0,230,118,0.1); }
+  .tag.econ { border-color: var(--yellow); color: var(--yellow); background: rgba(255,214,0,0.1); }
+  .tag.safety { border-color: var(--red); color: var(--red); background: rgba(255,23,68,0.1); }
+
+  /* ── HEATMAP (tab) ── */
+  .heatmap-wrap { overflow-x: auto; }
+  .heatmap-table { border-collapse: separate; border-spacing: 3px; }
+  .heatmap-table th { font-size: 0.68rem; padding: 0.4rem 0.5rem; }
+  .heatmap-table td {
+    width: 70px; height: 44px; text-align: center;
+    border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+    border: none; padding: 0;
+  }
+  .hm-label { font-size: 0.72rem; color: var(--muted); text-align: right; padding-right: 0.75rem !important; white-space: nowrap; }
+
+  /* ── HIDDEN TAB CONTENT ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted); font-size: 0.75rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.35s ease; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-icon">✈</span>
+    <div>
+      <div>AEROVISION</div>
+      <div class="header-sub">Flying Machine Innovation Dashboard</div>
+    </div>
+  </div>
+  <div style="font-size:0.75rem;color:var(--muted);">2026 Edition</div>
+</header>
+
+<div class="hero">
+  <h1>Where Aviation Meets Tomorrow</h1>
+  <p>Comprehensive performance analysis across 10 flying machine classes — mapped against 10 key innovation vectors to surface the design gaps that matter most.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">10</div><div class="lbl">Machine Classes</div></div>
+    <div class="hero-stat"><div class="val">10</div><div class="lbl">Performance Axes</div></div>
+    <div class="hero-stat"><div class="val">47</div><div class="lbl">Innovation Opportunities</div></div>
+    <div class="hero-stat"><div class="val">12</div><div class="lbl">Critical Gaps</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('explorer')">🔍 Machine Explorer</div>
+  <div class="tab" onclick="switchTab('comparison')">📊 Full Comparison</div>
+  <div class="tab" onclick="switchTab('heatmap')">🌡️ Gap Heatmap</div>
+  <div class="tab" onclick="switchTab('innovation')">💡 Innovation Map</div>
+</div>
+
+<main>
+
+  <!-- ═══════════════ TAB 1: EXPLORER ═══════════════ -->
+  <div id="tab-explorer" class="tab-content active">
+    <div class="section-title">Select a Flying Machine Class</div>
+    <div class="category-grid" id="categoryGrid"></div>
+    <div class="detail-panel" id="detailPanel"></div>
+  </div>
+
+  <!-- ═══════════════ TAB 2: COMPARISON ═══════════════ -->
+  <div id="tab-comparison" class="tab-content">
+    <div class="section-title">Performance Comparison — All Classes</div>
+    <div class="card">
+      <div class="comparison-wrap">
+        <table id="comparisonTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB 3: HEATMAP ═══════════════ -->
+  <div id="tab-heatmap" class="tab-content">
+    <div class="section-title">Innovation Gap Heatmap</div>
+    <p style="color:var(--muted);font-size:0.82rem;margin-bottom:1.5rem;">
+      Darker red = critical gap. Green = strong performance. Identify where innovation investment is most needed across all classes.
+    </p>
+    <div class="card">
+      <div class="heatmap-wrap">
+        <table class="heatmap-table" id="heatmapTable"></table>
+      </div>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:0.75rem;color:var(--muted);">Score scale:</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:20px;height:14px;border-radius:3px;background:#b71c1c;"></div><span style="font-size:0.7rem;color:var(--muted);">0–30 Critical</span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:20px;height:14px;border-radius:3px;background:#e65100;"></div><span style="font-size:0.7rem;color:var(--muted);">31–50 Poor</span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:20px;height:14px;border-radius:3px;background:#f9a825;"></div><span style="font-size:0.7rem;color:var(--muted);">51–65 Fair</span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:20px;height:14px;border-radius:3px;background:#2e7d32;"></div><span style="font-size:0.7rem;color:var(--muted);">66–80 Good</span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:20px;height:14px;border-radius:3px;background:#00695c;"></div><span style="font-size:0.7rem;color:var(--muted);">81–100 Excellent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB 4: INNOVATION MAP ═══════════════ -->
+  <div id="tab-innovation" class="tab-content">
+    <div class="section-title">Design Innovation Opportunities</div>
+    <p style="color:var(--muted);font-size:0.82rem;margin-bottom:1.5rem;">
+      Curated opportunities per machine class — where the performance gap is real, the technology is plausible, and the design space is open.
+    </p>
+    <div class="inno-grid" id="innovationGrid"></div>
+  </div>
+
+</main>
+
+<footer>
+  AeroVision Dashboard · Performance scores are normalized indices (0–100) based on current state-of-the-art benchmarks · Built for design innovation exploration
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+const METRICS = [
+  'Speed',
+  'Range',
+  'Fuel/Energy Eff.',
+  'Payload',
+  'Noise (low=good)',
+  'Emissions (low=good)',
+  'Maneuverability',
+  'Autonomy/AI',
+  'Cost Efficiency',
+  'Safety'
+];
+
+const MACHINES = [
+  {
+    id: 'airliner',
+    emoji: '✈️',
+    name: 'Commercial Airliner',
+    class: 'Fixed-Wing',
+    examples: 'Boeing 787, A350, A320neo',
+    scores: [72, 88, 65, 95, 40, 38, 30, 45, 70, 85],
+    gaps: [
+      { level: 'critical', title: 'Emissions', text: '<strong>Zero-emission propulsion</strong> — SAF and hydrogen tanks are under-integrated. Only ~2% of current fleet uses SAF blends. Hybrid-electric for short haul is technically achievable today.' },
+      { level: 'critical', title: 'Noise Footprint', text: '<strong>Open-rotor and ultra-high-bypass</strong> turbofan designs have stalled at certification stage. Active noise cancellation for engine nacelles is barely explored.' },
+      { level: 'high', title: 'Aerodynamic Efficiency', text: '<strong>Laminar flow wings</strong> — only partial NLF tested at scale. Morphing wing surfaces and riblet skin textures could unlock 8–15% drag reduction.' },
+      { level: 'medium', title: 'Autonomy', text: '<strong>Single-pilot operations</strong> are technically ready but regulatory frameworks lag 5–10 years. AI co-pilot redundancy systems are under-deployed.' },
+    ],
+    innovation: [
+      'Hydrogen fuel cell hybrid propulsion for <2000km routes',
+      'Morphing trailing-edge flaps for continuous camber optimization',
+      'Bio-inspired riblet fuselage skin (shark-scale texture) for 6% drag cut',
+      'Distributed electric propulsion on wing tips for boundary layer ingestion',
+      'AI-driven real-time fuel loading and route micro-optimization',
+    ],
+    tags: ['env','tech','econ']
+  },
+  {
+    id: 'fighter',
+    emoji: '🛩️',
+    name: 'Fighter Jet',
+    class: 'Military Fixed-Wing',
+    examples: 'F-22, Su-57, Eurofighter, J-20',
+    scores: [98, 60, 30, 50, 20, 15, 98, 75, 20, 70],
+    gaps: [
+      { level: 'critical', title: 'Fuel Efficiency', text: '<strong>Supercruise burn rates</strong> are 4–8x higher than optimal. Adaptive cycle engines (GE XA100) exist but are not fully fielded. Thermal management at Mach 1.5+ is unresolved.' },
+      { level: 'critical', title: 'Emissions', text: '<strong>Afterburner-on-demand</strong> creates acute local pollution. No emissions reduction roadmap exists for combat aviation — entirely overlooked domain.' },
+      { level: 'high', title: 'Cost Efficiency', text: '<strong>F-35 costs \$36,000/hr</strong> to operate. Additive manufacturing of complex titanium airframe components could cut production costs 20–40%.' },
+      { level: 'high', title: 'Human Limits', text: '<strong>9g sustained turns</strong> remain the human ceiling. Full unmanned combat teaming (loyal wingman drones) removes this limit — design space is wide open.' },
+    ],
+    innovation: [
+      'Variable-cycle engines adapting between subsonic efficiency and supersonic thrust',
+      'Loyal wingman AI drone swarms controlled by manned lead aircraft',
+      '3D-printed titanium airframe structures replacing machined forgings',
+      'Active aeroelastic wing twisting replacing traditional control surfaces',
+      'AI-driven energy management for BVR combat optimization',
+    ],
+    tags: ['tech','safety']
+  },
+  {
+    id: 'helicopter',
+    emoji: '🚁',
+    name: 'Helicopter',
+    class: 'Rotary-Wing',
+    examples: 'AH-64, Bell 525, H175, UH-60',
+    scores: [45, 42, 40, 65, 35, 40, 90, 50, 45, 78],
+    gaps: [
+      { level: 'critical', title: 'Speed Ceiling', text: '<strong>Retreating blade stall</strong> caps conventional helicopters at ~400 km/h. Compound helicopters (Sikorsky X2) show the path — rigid coaxial rotors + pusher prop — but aren\'t mainstream.' },
+      { level: 'critical', title: 'Noise', text: '<strong>Blade-Vortex Interaction (BVI)</strong> noise is the defining urban limitation. Active rotor head control (IBC) can cut BVI noise 10 dB — deployed on <5% of fleet.' },
+      { level: 'high', title: 'Fuel Efficiency', text: '<strong>Translational lift</strong> wastes energy at hover. Variable-diameter rotors and active blade twist could improve hover efficiency 15–25%.' },
+      { level: 'medium', title: 'Autonomy', text: '<strong>Autorotation AI</strong> — automatic engine-out handling tested in military but absent from civil platforms. Could save hundreds of lives per decade.' },
+    ],
+    innovation: [
+      'Rigid coaxial rotor + pusher propeller compound configuration for 480+ km/h',
+      'Individual Blade Control (IBC) for BVI noise elimination in urban corridors',
+      'Variable-diameter rotor blades for hover/cruise efficiency trade-off',
+      'Electric tail rotor replacing complex torque compensation shaft drive',
+      'Autorotation AI co-pilot for automatic emergency landing',
+    ],
+    tags: ['tech','safety','env']
+  },
+  {
+    id: 'evtol',
+    emoji: '🚕',
+    name: 'eVTOL / Air Taxi',
+    class: 'Urban Air Mobility',
+    examples: 'Joby S4, Lilium Jet, Archer Midnight, Wisk',
+    scores: [50, 28, 72, 20, 80, 88, 65, 70, 40, 72],
+    gaps: [
+      { level: 'critical', title: 'Range & Battery', text: '<strong>Energy density ceiling at ~300 Wh/kg</strong> limits range to 80–150 km. Solid-state batteries (target 500+ Wh/kg) are 5–8 years from aviation certification — the single biggest blocker.' },
+      { level: 'critical', title: 'Payload', text: '<strong>Useful load is 15–25%</strong> of MTOW, barely better than 1960s designs. Structural mass fractions need a step-change via composite aerostructures and topology-optimized frames.' },
+      { level: 'high', title: 'Cost Efficiency', text: '<strong>Currently \$3–6/km</strong>, needs to reach \$0.5–1/km to be viable mass transit. Manufacturing at scale and motor/inverter cost curves are not yet there.' },
+      { level: 'medium', title: 'Autonomy', text: '<strong>Piloted UAM</strong> is an interim step. Full passenger autonomy requires detect-and-avoid maturity and regulatory frameworks that are 5+ years away.' },
+    ],
+    innovation: [
+      'Solid-state battery packs with thermal runaway suppression for aviation',
+      'Distributed electric propulsion with 12+ motors for true single-fault tolerance',
+      'Tiltwing configuration balancing VTOL agility with fixed-wing cruise efficiency',
+      'AI-driven urban airspace orchestration (UTM) for high-density corridors',
+      'Structural health monitoring via embedded piezoelectric sensors',
+    ],
+    tags: ['tech','env','econ','safety']
+  },
+  {
+    id: 'drone',
+    emoji: '🛸',
+    name: 'Drone / UAV',
+    class: 'Unmanned Aerial',
+    examples: 'MQ-9 Reaper, DJI Matrice, WingLoong, Amazon Prime Air',
+    scores: [55, 50, 58, 35, 60, 62, 80, 92, 80, 65],
+    gaps: [
+      { level: 'critical', title: 'Payload-to-Weight', text: '<strong>Most commercial drones carry 5–30% of MTOW</strong>. Bio-inspired truss airframes and monocoque composite shells could push this to 50%+, unlocking viable cargo drones.' },
+      { level: 'high', title: 'Detect & Avoid', text: '<strong>BVLOS operations</strong> require certified DAA systems. LiDAR/radar fusion with AI inference at <10ms latency remains unsolved at low SWaP (size, weight, power).' },
+      { level: 'high', title: 'Swarm Intelligence', text: '<strong>True cooperative swarm behavior</strong> — dynamic role allocation, mesh comms, shared situational awareness — exists in research but not in certified systems.' },
+      { level: 'medium', title: 'Adverse Weather', text: '<strong>Rain and wind >40 km/h</strong> ground most consumer/commercial drones. Sealed motor designs, auto-feathering props, and gust-adaptive flight control are underexplored.' },
+    ],
+    innovation: [
+      'Bio-inspired flapping micro-UAV for confined-space inspection',
+      'Hydrogen fuel cell range extender for 8+ hour BVLOS endurance',
+      'LiDAR-camera-radar sensor fusion for all-weather DAA',
+      'Mesh-networked swarms with emergent task allocation AI',
+      'Self-healing composite airframe with embedded damage sensing',
+    ],
+    tags: ['tech','safety','econ']
+  },
+  {
+    id: 'supersonic',
+    emoji: '⚡',
+    name: 'Supersonic Jet',
+    class: 'High-Speed',
+    examples: 'Boom Overture, Aerion AS2, SonicStar (concept)',
+    scores: [92, 65, 22, 40, 15, 18, 55, 50, 25, 75],
+    gaps: [
+      { level: 'critical', title: 'Sonic Boom', text: '<strong>Overland supersonic flight banned since Concorde</strong>. Low-boom shaping (NASA X-59 QueSST) reduces boom from 105 dB to 75 dB — but no overland certification pathway exists yet.' },
+      { level: 'critical', title: 'Fuel Efficiency', text: '<strong>Concorde burned 17L/100km per passenger</strong> vs 3L for modern subsonic. Laminar flow nacelle inlets, variable-geometry intakes, and SAF blends could cut this by 30–40% but remain unimplemented.' },
+      { level: 'high', title: 'Emissions at Altitude', text: '<strong>NOx in the stratosphere</strong> has 4–10× higher climate forcing than ground-level. No supersonic operator has a credible stratospheric emissions mitigation plan.' },
+      { level: 'high', title: 'Cost', text: '<strong>Overture ticket price projected at \$5,000+</strong>. Route network is ultra-thin. Only becomes viable if efficiency gap vs. subsonic closes to <2× rather than current 5×.' },
+    ],
+    innovation: [
+      'Low-boom airframe shaping for overland Mach 1.2–1.4 certification',
+      'Variable-geometry supersonic intake for off-design efficiency',
+      '100% SAF-capable engine combustor redesign',
+      'Adaptive thermal management for leading edge and engine bay at Mach 1.7+',
+      'Stratospheric NOx capture/neutralization catalytic system (concept)',
+    ],
+    tags: ['env','tech','econ']
+  },
+  {
+    id: 'hypersonic',
+    emoji: '🚀',
+    name: 'Hypersonic Vehicle',
+    class: 'Extreme High-Speed',
+    examples: 'X-43, HTV-2, Boeing X-51, Hermeus Quarterhorse',
+    scores: [100, 40, 8, 25, 5, 5, 40, 60, 5, 30],
+    gaps: [
+      { level: 'critical', title: 'Thermal Management', text: '<strong>Stagnation temps exceed 2000°C at Mach 10</strong>. UHTC ceramics (ZrB₂, HfC) and active transpiration cooling exist but life expectancy is minutes, not hours. Reusable TPS is the grand challenge.' },
+      { level: 'critical', title: 'Propulsion', text: '<strong>SCRAMJET ignition above Mach 5</strong> is solved but sustained combustion and throttling remain extremely difficult. Combined-cycle TBCC engines (turbo + ramjet + scramjet) are in early prototype.' },
+      { level: 'critical', title: 'Fuel Efficiency', text: '<strong>Specific impulse of scramjets is 1000–1500s</strong> — better than rockets but far below turbofans. Detonation-based combustion (rotating detonation) could push Isp to 2000s+.' },
+      { level: 'critical', title: 'Safety / Controllability', text: '<strong>Plasma sheath at Mach 8+</strong> causes communications blackout. Control surface effectiveness drops dramatically. Active plasma flow control is theoretical.' },
+    ],
+    innovation: [
+      'Rotating detonation engine for 40% higher fuel efficiency vs scramjet',
+      'Active transpiration cooling using endothermic fuel as coolant',
+      'Bio-inspired ablative TPS with self-sealing micro-vascular channels',
+      'Plasma flow control surfaces replacing conventional elevons',
+      'Combined-cycle TBCC propulsion for Mach 0–12 single-stage flight',
+    ],
+    tags: ['tech','safety']
+  },
+  {
+    id: 'airship',
+    emoji: '🎈',
+    name: 'Airship / Blimp',
+    class: 'Lighter-Than-Air',
+    examples: 'HAV Airlander 10, LTA Pathfinder, Sceye stratospheric',
+    scores: [18, 55, 90, 80, 90, 85, 10, 40, 60, 65],
+    gaps: [
+      { level: 'critical', title: 'Speed', text: '<strong>60–130 km/h cruise</strong> makes airships impractical for time-sensitive cargo. Aerodynamic hull optimization + auxiliary electric boosters could push to 200 km/h — an underexplored design space.' },
+      { level: 'critical', title: 'Weather Resilience', text: '<strong>Ground handling and gust sensitivity</strong> are the operational killer. Autonomous mooring systems, dynamic ballast control, and active hull pressure regulation are nascent.' },
+      { level: 'high', title: 'Maneuverability', text: '<strong>Vectored thrust pods</strong> exist on Airlander but are not optimized. Distributed electric propulsion along the hull could enable hover-precision docking without ground crew.' },
+      { level: 'medium', title: 'Altitude Control', text: '<strong>Variable buoyancy systems</strong> (compressed helium cycling) are mechanically complex. Electrochemical buoyancy control via electrolysis is theoretically far superior.' },
+    ],
+    innovation: [
+      'Hybrid buoyancy: electrochemical variable-lift + electric vectored thrust',
+      'Solar-skin covering 60% of hull for near-zero fuel stratospheric station-keeping',
+      'Autonomous mooring drone swarm replacing 20-person ground crew',
+      'Aerodynamic hull morphing for speed/efficiency mode switching',
+      'Persistent stratospheric platforms for 5G relay and Earth observation',
+    ],
+    tags: ['env','tech','econ']
+  },
+  {
+    id: 'solar',
+    emoji: '☀️',
+    name: 'Solar / Electric Aircraft',
+    class: 'Zero-Emission',
+    examples: 'Solar Impulse 2, Sunglider, Joby, Pipistrel Velis',
+    scores: [22, 35, 98, 15, 95, 98, 25, 55, 50, 72],
+    gaps: [
+      { level: 'critical', title: 'Speed', text: '<strong>55–100 km/h cruise</strong> limits solar aircraft to niche science and ISR missions. Ultra-low-drag flying wing configurations with regenerative gliding could push commercial speed to 200+ km/h.' },
+      { level: 'critical', title: 'Payload', text: '<strong>Structural fraction exceeds 80%</strong> to house solar cells and batteries, leaving almost nothing for payload. Multifunctional structures — solar-cell-embedded carbon fibre — could recover 20% payload fraction.' },
+      { level: 'high', title: 'Night/Cloud Operations', text: '<strong>Solar gap at night or cloud cover</strong> is existential. Regenerative fuel cells (solar → electrolysis → H₂ storage → fuel cell at night) solve this but add weight — optimization unsolved.' },
+      { level: 'medium', title: 'Scale-up', text: '<strong>No solar commercial transport pathway</strong> exists. HAPS (high-altitude pseudo-satellites) at 20km altitude + laser/RF power beaming to ground is the next frontier.' },
+    ],
+    innovation: [
+      'Multifunctional solar-cell-embedded CFRP skin panels (structural + power)',
+      'Regenerative H₂ fuel cell for day/night continuous stratospheric flight',
+      'Ultra-high aspect ratio (>30) flexible flying wing morphing in thermals',
+      'Laser/RF power beaming to ground relay for HAPS connectivity missions',
+      'Formation flight energy harvesting via wingtip vortex surfing',
+    ],
+    tags: ['env','tech']
+  },
+  {
+    id: 'ornithopter',
+    emoji: '🦅',
+    name: 'Ornithopter / Bio-inspired',
+    class: 'Flapping Wing',
+    examples: 'Festo BionicFlyingFox, Harvard RoboBee, DelFly',
+    scores: [15, 12, 55, 5, 92, 72, 88, 65, 35, 58],
+    gaps: [
+      { level: 'critical', title: 'Range & Endurance', text: '<strong>Battery limits flapping micro-UAVs to minutes</strong>. No large ornithopter has exceeded 1 hour flight. Scaling laws from biology suggest optimal size at 1–5 kg, where endurance should be achievable.' },
+      { level: 'critical', title: 'Payload', text: '<strong>Structural weight of flapping mechanism</strong> consumes most mass budget. Smart materials (piezoelectric, shape-memory alloy actuators) replacing servo-driven joints could cut mechanism mass 60%.' },
+      { level: 'high', title: 'Speed', text: '<strong>Maximum speed 60–80 km/h</strong> due to flapping cycle limits. Variable-camber morphing wing (like swift folding wings) allows gliding transitions that dramatically extend range.' },
+      { level: 'medium', title: 'Manufacturing', text: '<strong>Articulated joints at micro-scale</strong> are incredibly delicate. MEMS fabrication and soft robotics manufacturing techniques are largely untransferred to aviation.' },
+    ],
+    innovation: [
+      'Piezoelectric/SMA actuators replacing servo drives in flapping mechanism',
+      'Biohybrid actuators using lab-grown muscle tissue for micro-ornithopters',
+      'Variable-camber morphing wing for efficient glide/flap switching',
+      'Atmospheric energy harvesting via thermal soaring AI',
+      'MEMS-fabricated micro-ornithopters for confined inspection tasks',
+    ],
+    tags: ['tech','env']
+  },
+];
+
+const INNOVATION_THEMES = [
+  {
+    emoji: '⚡',
+    title: 'Zero-Emission Propulsion',
+    subtitle: 'Hydrogen, Electric, Hybrid',
+    machines: ['airliner','evtol','solar','helicopter'],
+    opportunities: [
+      'Hydrogen fuel cell turbofan hybrid for medium-haul routes (1000–2500 km)',
+      'Solid-state aviation battery with >500 Wh/kg and 1000-cycle life',
+      'Liquid hydrogen cryo-tank integration in composite fuselage',
+      'Ammonia combustion turbine as zero-carbon kerosene replacement',
+      'Regenerative fuel cell for solar aircraft night operations',
+    ],
+    tags: ['env','tech']
+  },
+  {
+    emoji: '🌊',
+    title: 'Aerodynamic Innovation',
+    subtitle: 'Laminar Flow, Morphing, Bio-inspired',
+    machines: ['airliner','fighter','supersonic','solar'],
+    opportunities: [
+      'Natural Laminar Flow (NLF) wing covering >50% chord at Re > 20M',
+      'Morphing trailing edge replacing discrete flap segments',
+      'Shark-skin riblet film reducing turbulent skin friction by 5–8%',
+      'Adaptive blended winglet geometry for real-time drag optimization',
+      'Active flow control via plasma actuators for separation delay',
+    ],
+    tags: ['tech','econ','env']
+  },
+  {
+    emoji: '🤖',
+    title: 'Autonomy & AI',
+    subtitle: 'Piloting, Control, Swarms',
+    machines: ['drone','evtol','airliner','helicopter'],
+    opportunities: [
+      'Single-pilot + AI co-pilot for commercial transport (EASA CS-25 revision needed)',
+      'Certified detect-and-avoid for BVLOS drone operations',
+      'Cooperative UAV swarm with emergent task allocation (no central coordinator)',
+      'Autorotation/emergency landing AI for rotorcraft',
+      'Neuromorphic flight control chip for 10× energy-efficient inference',
+    ],
+    tags: ['tech','safety']
+  },
+  {
+    emoji: '🔇',
+    title: 'Acoustic Engineering',
+    subtitle: 'Urban Noise, Certification',
+    machines: ['helicopter','evtol','airliner','drone'],
+    opportunities: [
+      'Individual Blade Control (IBC) active noise for BVI cancellation',
+      'Open-rotor engine acoustic liner technology',
+      'Distributed electric propulsion blade frequency detuning',
+      'Urban air mobility approach profile optimization for <65 dB',
+      'Acoustic metamaterial engine nacelle panels for broadband suppression',
+    ],
+    tags: ['tech','env']
+  },
+  {
+    emoji: '🛠️',
+    title: 'Advanced Manufacturing',
+    subtitle: 'Composites, AM, Smart Structures',
+    machines: ['fighter','evtol','drone','ornithopter'],
+    opportunities: [
+      'Topology-optimized additive manufactured titanium airframe nodes',
+      'Out-of-autoclave thermoplastic CFRP for high-rate fuselage production',
+      'Self-healing composite via micro-encapsulated resin healing agents',
+      'Multifunctional structural battery (CFRP + lithium intercalation)',
+      'Embedded piezo sensor network for real-time structural health monitoring',
+    ],
+    tags: ['tech','safety','econ']
+  },
+  {
+    emoji: '🌡️',
+    title: 'Thermal & High-Speed',
+    subtitle: 'Hypersonic, Reusability',
+    machines: ['hypersonic','supersonic','fighter'],
+    opportunities: [
+      'Transpiration cooling using endothermic fuel in leading-edge channels',
+      'Ultra-high temperature ceramics (UHTC) for reusable TPS at Mach 10',
+      'Combined-cycle TBCC engine for Mach 0–8 single-stage operation',
+      'Rotating detonation combustion for supersonic propulsion efficiency',
+      'Plasma-sheath communications blackout mitigation at Mach 8+',
+    ],
+    tags: ['tech']
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let selectedMachineId = 'airliner';
+let radarChart = null;
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function scoreColor(v) {
+  if (v <= 30) return '#ff1744';
+  if (v <= 50) return '#ff6b35';
+  if (v <= 65) return '#ffd600';
+  if (v <= 80) return '#00e676';
+  return '#00bcd4';
+}
+function heatmapBg(v) {
+  if (v <= 30) return '#b71c1c';
+  if (v <= 50) return '#e65100';
+  if (v <= 65) return '#f9a825';
+  if (v <= 80) return '#2e7d32';
+  return '#00695c';
+}
+function heatmapFg(v) { return v <= 65 ? '#fff' : '#fff'; }
+function barColor(v) {
+  if (v <= 30) return 'var(--red)';
+  if (v <= 50) return 'var(--accent3)';
+  if (v <= 65) return 'var(--yellow)';
+  if (v <= 80) return 'var(--green)';
+  return 'var(--accent)';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER CATEGORY GRID
+// ═══════════════════════════════════════════════════════════════
+function renderCategoryGrid() {
+  const el = document.getElementById('categoryGrid');
+  el.innerHTML = MACHINES.map(m => `
+    <button class="cat-btn ${m.id === selectedMachineId ? 'active' : ''}" onclick="selectMachine('${m.id}')">
+      <span class="emoji">${m.emoji}</span>
+      <div class="name">${m.name}</div>
+      <div class="class">${m.class}</div>
+    </button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER DETAIL PANEL
+// ═══════════════════════════════════════════════════════════════
+function renderDetail(m) {
+  const panel = document.getElementById('detailPanel');
+  panel.className = 'detail-panel fade-in';
+
+  const avgScore = Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length);
+
+  panel.innerHTML = `
+    <!-- LEFT CARD: Machine Info + Metrics -->
+    <div class="card">
+      <div class="machine-header">
+        <div class="machine-emoji">${m.emoji}</div>
+        <div class="machine-title">
+          <h2>${m.name}</h2>
+          <div class="subtitle">${m.class} · Avg Performance: <span style="color:${scoreColor(avgScore)};font-weight:700">${avgScore}/100</span></div>
+          <div class="examples">${m.examples}</div>
+        </div>
+      </div>
+      <h3>Performance Metrics</h3>
+      ${METRICS.map((metric, i) => `
+        <div class="metric-row">
+          <div class="metric-label">${metric}</div>
+          <div class="metric-bar-bg">
+            <div class="metric-bar" style="width:${m.scores[i]}%;background:${barColor(m.scores[i])};"></div>
+          </div>
+          <div class="metric-val" style="color:${scoreColor(m.scores[i])}">${m.scores[i]}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- RIGHT SIDE: Radar + Gaps -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      <div class="card">
+        <h3>Performance Radar</h3>
+        <div class="chart-wrap">
+          <canvas id="radarCanvas"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🔴 Innovation Gaps — Where Design Can Win</h3>
+        <div class="gap-list">
+          ${m.gaps.map(g => `
+            <div class="gap-item ${g.level}">
+              <div class="gap-badge">${g.level}</div>
+              <div class="gap-text"><strong>${g.title}:</strong> ${g.text}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">💡 Key Innovation Opportunities</div>
+          <ul style="list-style:none;">
+            ${m.innovation.map(i => `<li style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;border-bottom:1px solid rgba(30,48,80,0.4);display:flex;gap:0.5rem;"><span style="color:var(--accent);flex-shrink:0">→</span>${i}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Draw radar
+  setTimeout(() => drawRadar(m), 50);
+}
+
+function drawRadar(m) {
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+  const ctx = document.getElementById('radarCanvas');
+  if (!ctx) return;
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: METRICS,
+      datasets: [{
+        label: m.name,
+        data: m.scores,
+        backgroundColor: 'rgba(0,212,255,0.12)',
+        borderColor: 'rgba(0,212,255,0.8)',
+        borderWidth: 2,
+        pointBackgroundColor: m.scores.map(v => scoreColor(v)),
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 20, color: '#7a9bb5', backdropColor: 'transparent', font: { size: 10 } },
+          grid: { color: 'rgba(30,48,80,0.6)' },
+          angleLines: { color: 'rgba(30,48,80,0.6)' },
+          pointLabels: { color: '#7a9bb5', font: { size: 9.5 } }
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function selectMachine(id) {
+  selectedMachineId = id;
+  renderCategoryGrid();
+  const m = MACHINES.find(x => x.id === id);
+  renderDetail(m);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER COMPARISON TABLE
+// ═══════════════════════════════════════════════════════════════
+function renderComparison() {
+  const table = document.getElementById('comparisonTable');
+  const metricShorts = ['Speed','Range','Efficiency','Payload','Noise↓','Emissions↓','Maneuv.','Autonomy','Cost Eff.','Safety'];
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Aircraft Class</th>
+        ${metricShorts.map(m=>`<th>${m}</th>`).join('')}
+        <th>Avg Score</th>
+        <th>Biggest Gap</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${MACHINES.map(m => {
+        const avg = Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length);
+        const minIdx = m.scores.indexOf(Math.min(...m.scores));
+        return `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span>${m.emoji}</span>
+                <div>
+                  <div style="font-weight:600;font-size:0.82rem;">${m.name}</div>
+                  <div style="font-size:0.68rem;color:var(--muted);">${m.class}</div>
+                </div>
+              </div>
+            </td>
+            ${m.scores.map(s=>`
+              <td>
+                <span class="score-pill" style="background:${heatmapBg(s)}22;color:${scoreColor(s)};border:1px solid ${scoreColor(s)}44;">${s}</span>
+              </td>
+            `).join('')}
+            <td><span style="font-weight:700;color:${scoreColor(avg)}">${avg}</span></td>
+            <td style="font-size:0.75rem;color:var(--muted);">${METRICS[minIdx]} <span style="color:var(--red);">(${m.scores[minIdx]})</span></td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER HEATMAP
+// ═══════════════════════════════════════════════════════════════
+function renderHeatmap() {
+  const t = document.getElementById('heatmapTable');
+  const metricShorts = ['Speed','Range','Effic.','Payload','Noise↓','Emiss.↓','Maneuv.','AI/Auto','Cost','Safety'];
+  t.innerHTML = `
+    <thead>
+      <tr>
+        <th style="text-align:right;padding-right:0.75rem;">Class →</th>
+        ${metricShorts.map(m=>`<th>${m}</th>`).join('')}
+        <th>Avg</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${MACHINES.map(m => {
+        const avg = Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length);
+        return `
+          <tr>
+            <td class="hm-label">${m.emoji} ${m.name.replace('/ ','/')}</td>
+            ${m.scores.map(s=>`
+              <td style="background:${heatmapBg(s)};color:${heatmapFg(s)}">${s}</td>
+            `).join('')}
+            <td style="background:${heatmapBg(avg)};color:#fff;font-weight:700;">${avg}</td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER INNOVATION MAP
+// ═══════════════════════════════════════════════════════════════
+function renderInnovation() {
+  const grid = document.getElementById('innovationGrid');
+  grid.innerHTML = INNOVATION_THEMES.map(theme => {
+    const relMachines = theme.machines.map(id => MACHINES.find(m=>m.id===id)).filter(Boolean);
+    return `
+      <div class="inno-card">
+        <div class="inno-card-header">
+          <span class="ic">${theme.emoji}</span>
+          <div>
+            <div class="inno-card-title">${theme.title}</div>
+            <div class="inno-card-sub">${theme.subtitle}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+          ${relMachines.map(m=>`<span style="font-size:0.68rem;padding:2px 6px;border-radius:10px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--muted);">${m.emoji} ${m.name.split(' ')[0]}</span>`).join('')}
+        </div>
+        <ul class="opportunity-list">
+          ${theme.opportunities.map(o=>`<li>${o}</li>`).join('')}
+        </ul>
+        <div class="inno-tags">
+          ${theme.tags.map(t=>`<span class="tag ${t}">${{tech:'🔬 Technology',env:'🌱 Environment',econ:'💰 Economics',safety:'🛡️ Safety'}[t]}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['explorer','comparison','heatmap','innovation'][i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+
+  if (name === 'comparison') renderComparison();
+  if (name === 'heatmap') renderHeatmap();
+  if (name === 'innovation') renderInnovation();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+renderCategoryGrid();
+renderDetail(MACHINES[0]);
+</script>
+</body>
+</html>

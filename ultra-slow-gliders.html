@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ultra-Slow Gliders Analysis (Vmin ≤ 15 km/h)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#070c14;--surface:#0c1724;--surface2:#101f30;--border:#1a2e45;
+  --accent:#00d4ff;--animal:#ff8f00;--machine:#00bcd4;
+  --text:#e8f4fd;--muted:#6a8daa;--card:#0c1824;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:2rem;}
+header{margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1rem;}
+h1{font-size:2rem;color:var(--accent);margin-bottom:0.5rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.chart-container{height:400px;position:relative;}
+table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-top:1rem;}
+th,td{padding:0.75rem;text-align:left;border-bottom:1px solid var(--border);}
+th{background:var(--surface2);color:var(--muted);text-transform:uppercase;font-size:0.75rem;}
+tr:hover td{background:rgba(0,212,255,0.05);}
+.badge{padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;}
+.badge-animal{background:rgba(255,143,0,0.15);color:var(--animal);}
+.badge-machine{background:rgba(0,188,212,0.15);color:var(--machine);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AeroVision: Ultra-Slow Gliders (Vmin ≤ 15 km/h)</h1>
+  <p style="color:var(--muted)">Analyse comparative des entités biologiques et mécaniques capables de maintenir un vol plané à très basse vitesse (régime ≤ 15 km/h), incluant la comparaison des masses.</p>
+</header>
+
+<div class="grid2">
+  <div class="card">
+    <h3 style="color:var(--muted);margin-bottom:1rem;text-transform:uppercase;font-size:0.8rem;">Masse (kg) vs Finesse Maximale (L/D)</h3>
+    <div class="chart-container">
+      <canvas id="massVsLdChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--muted);margin-bottom:1rem;text-transform:uppercase;font-size:0.8rem;">Vitesse Minimum (km/h) vs Taux de Chute (m/s)</h3>
+    <div class="chart-container">
+      <canvas id="vminVsSinkChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="color:var(--muted);text-transform:uppercase;font-size:0.8rem;">Données de Performance</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Entité</th>
+        <th>Type</th>
+        <th>Masse (kg)</th>
+        <th>Vmin (km/h)</th>
+        <th>Vcruise (km/h)</th>
+        <th>Finesse (L/D)</th>
+        <th>Taux de chute min (m/s)</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+const data = [
+  // Biosystems
+  { name: 'Papillon Monarque', type: 'animal', mass: 0.0005, vmin: 8, vcruise: 20, ld: 4, sink: 1.0, emoji: '🦋' },
+  { name: 'Graine de Zanonia', type: 'animal', mass: 0.003, vmin: 5, vcruise: 10, ld: 4, sink: 0.4, emoji: '🌱' },
+  { name: 'Lézard Volant (Draco)', type: 'animal', mass: 0.02, vmin: 10, vcruise: 15, ld: 2, sink: 1.5, emoji: '🦎' },
+  { name: 'Petite Chauve-souris', type: 'animal', mass: 0.05, vmin: 12, vcruise: 20, ld: 6, sink: 0.9, emoji: '🦇' },
+  { name: 'Écureuil Volant', type: 'animal', mass: 1.5, vmin: 14, vcruise: 25, ld: 3, sink: 2.0, emoji: '🐿️' },
+  
+  // Machines
+  { name: 'Micro-UAV (DelFly)', type: 'machine', mass: 0.02, vmin: 6, vcruise: 12, ld: 3, sink: 1.2, emoji: '🚁' },
+  { name: 'Avion Papier (Origami)', type: 'machine', mass: 0.005, vmin: 10, vcruise: 15, ld: 5, sink: 1.1, emoji: '📄' },
+  { name: 'Walkalong Glider (EPS)', type: 'machine', mass: 0.002, vmin: 3, vcruise: 5, ld: 6, sink: 0.3, emoji: '🪶' },
+  { name: 'Planeur Indoor (F1D)', type: 'machine', mass: 0.001, vmin: 2, vcruise: 4, ld: 5, sink: 0.2, emoji: '🎈' },
+  { name: 'Planeur RC F3K (DLG)', type: 'machine', mass: 0.25, vmin: 14, vcruise: 30, ld: 20, sink: 0.25, emoji: '🛩️' }
+];
+
+const renderTable = () => {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = data.sort((a,b)=>a.vmin - b.vmin).map(d => `
+    <tr>
+      <td><strong style="color:${d.type==='animal'?'var(--animal)':'var(--machine)'}">${d.emoji} ${d.name}</strong></td>
+      <td><span class="badge ${d.type==='animal'?'badge-animal':'badge-machine'}">${d.type}</span></td>
+      <td>${d.mass.toFixed(4)}</td>
+      <td>${d.vmin}</td>
+      <td>${d.vcruise}</td>
+      <td>${d.ld}:1</td>
+      <td>${d.sink}</td>
+    </tr>
+  `).join('');
+};
+
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#6a8daa' } } }
+};
+
+const createChart = (ctxId, xField, yField, xLabel, yLabel, xType = 'linear') => {
+  const ctx = document.getElementById(ctxId).getContext('2d');
+  new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Animaux & Biosystèmes',
+          data: data.filter(d=>d.type==='animal').map(d=>({x: d[xField], y: d[yField], raw: d})),
+          backgroundColor: 'rgba(255,143,0,0.7)', borderColor: '#FF8F00', pointRadius: 7
+        },
+        {
+          label: 'Machines & Ingénierie',
+          data: data.filter(d=>d.type==='machine').map(d=>({x: d[xField], y: d[yField], raw: d})),
+          backgroundColor: 'rgba(0,188,212,0.7)', borderColor: '#00BCD4', pointRadius: 7
+        }
+      ]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        x: { type: xType, title: { display: true, text: xLabel, color: '#6a8daa' }, ticks: { color: '#6a8daa' }, grid: { color: 'rgba(26,46,69,0.5)' } },
+        y: { title: { display: true, text: yLabel, color: '#6a8daa' }, ticks: { color: '#6a8daa' }, grid: { color: 'rgba(26,46,69,0.5)' } }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: { label: (ctx) => `${ctx.raw.raw.name}: ${xLabel} = ${ctx.parsed.x}, ${yLabel} = ${ctx.parsed.y}` }
+        }
+      }
+    }
+  });
+};
+
+window.onload = () => {
+  renderTable();
+  createChart('massVsLdChart', 'mass', 'ld', 'Masse (kg) - Log Scale', 'Finesse Maximale (L/D)', 'logarithmic');
+  createChart('vminVsSinkChart', 'vmin', 'sink', 'Vitesse Min (km/h)', 'Taux de chute min (m/s)', 'linear');
+};
+</script>
+</body>
+</html>
