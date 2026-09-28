@@ -33,10 +33,29 @@ Une vue orientée "Ingénierie & Design" évaluant 10 classes de machines sur 10
 
 ## 🔗 Liens Publics (GitHub Pages)
 
-Si GitHub Pages est activé sur la branche `main`, les applications sont directement consultables en ligne :
+Si GitHub Pages est activé, les applications sont directement consultables en ligne :
 - App Principale : [https://trottet.github.io/Aerovision/aero-compare.html](https://trottet.github.io/Aerovision/aero-compare.html)
 - Planeurs Ultra-Lents : [https://trottet.github.io/Aerovision/ultra-slow-gliders.html](https://trottet.github.io/Aerovision/ultra-slow-gliders.html)
 - Innovation : [https://trottet.github.io/Aerovision/index.html](https://trottet.github.io/Aerovision/index.html)
+
+## 🚀 Comment utiliser
+
+### Option 1 : En ligne (Recommandé)
+Naviguez simplement sur les liens publics ci-dessus avec n'importe quel navigateur récent (ordinateur ou mobile). 
+- Cliquez sur les onglets (tabs) en haut pour naviguer entre les différentes visualisations.
+- Survolez les graphiques avec votre souris pour afficher les données précises (infobulles).
+- Dans l'onglet "Polaires de vol", cliquez sur les étiquettes des planeurs/oiseaux pour afficher ou masquer leur courbe.
+- Dans le tableau de données, cliquez sur les en-têtes (ex: "Finesse") pour trier la liste.
+
+### Option 2 : En local sur votre machine
+Si vous avez cloné ou téléchargé le code source :
+1. Les fichiers HTML n'ont pas besoin d'installation complexe (pas de Node.js ou de base de données).
+2. Lancez simplement un petit serveur local pour que les graphiques se chargent correctement (sécurité CORS). 
+   Exemple avec Python (dans votre terminal) :
+   ```bash
+   python -m http.server 8765
+   ```
+3. Ouvrez votre navigateur et allez sur `http://localhost:8765/aero-compare.html`.
 
 ## 📚 Sources des données
 Les données proviennent de la littérature aéronautique et ornithologique (Pennycuick, UIUC Airfoil Data Site, NASA, Jane's All the World's Aircraft). Plus de détails dans l'onglet "Références" de l'application principale.
